@@ -36,7 +36,7 @@ int main(){
 	int x;
 	std::cin >> x;
 
-	aitf_manager->join();
+	aitf_manager->stop_thread();
 	delete(aitf_manager);
 
 }
