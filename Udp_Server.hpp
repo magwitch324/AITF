@@ -1,7 +1,9 @@
 #ifndef UDP_SERVER_HPP
 #define UDP_SERVER_HPP
-
+#include <boost/asio.hpp>
+#include <boost/array.hpp>
 #include "Packet_Listener.hpp"
+#include "logger.hpp"
 
 
 class Udp_Server{
@@ -14,10 +16,13 @@ class Udp_Server{
 		void stop();
 
 	private:
-		void handle_receive(const boost::system::error_code& error,
-      std::size_t);
+		void handle_receive(const boost::system::error_code& error, std::size_t);
+		void udp_listen();
 		Packet_Listener* listener;
-		std::vector<char> recv_buff;
+		boost::asio::ip::udp::socket* udp_sock = NULL;
+		boost::asio::ip::udp::endpoint remote_endpoint_;
+		boost::array<uint8_t, 165> recv_buff;
+		boost::asio::io_service udp_io;
 
 };
 

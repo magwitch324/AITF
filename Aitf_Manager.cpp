@@ -14,14 +14,17 @@
 	}
 	
 	void Aitf_Manager::start_thread(){
-
+		log(logINFO) << "starting Aitf_Manager";
 		aitf_thread = boost::thread(&Aitf_Manager::run, this);
 
 	}
 
 	void Aitf_Manager::join(){
+		log(logINFO) << "Stopping aitf manager";
 		server->stop();
+		delete(server);
 		aitf_thread.join();
+		log(logINFO) << "Aitf manager stopped";
 	}
 
 
