@@ -2,7 +2,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 #include "Aitf_Hosts_Table.hpp"
-#include "logger.hpp"
+#include "../logger.hpp"
 
 Aitf_Hosts_Table::Aitf_Hosts_Table(){
 	Filter_Info* info = new Filter_Info();

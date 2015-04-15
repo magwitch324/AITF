@@ -2,7 +2,7 @@
 #define AITF_MANAGER_HPP
 #include "Packet_Listener.hpp"
 #include "Udp_Server.hpp"
-#include "Aitf_Hosts_Table.hpp"
+#include "../Tables/Aitf_Hosts_Table.hpp"
 
 class Aitf_Manager : public Packet_Listener
 {

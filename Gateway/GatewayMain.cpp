@@ -2,9 +2,9 @@
 #include <boost/thread.hpp>
 #include <boost/date_time.hpp>
 #include "logger.hpp"
-#include "Aitf_Manager.hpp"
+#include "Aitf_Manager/Aitf_Manager.hpp"
 
-#include "Aitf_Hosts_Table.hpp"
+#include "Tables/Aitf_Hosts_Table.hpp"
 
 loglevel_e loglevel = logERROR;
 Aitf_Hosts_Table* aitf_hosts_table;

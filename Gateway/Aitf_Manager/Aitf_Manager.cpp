@@ -1,6 +1,6 @@
 #include <boost/thread.hpp>
 #include <boost/date_time.hpp>
-#include "logger.hpp"
+#include "../logger.hpp"
 #include "Aitf_Manager.hpp"
 #include "Udp_Server.hpp"
 

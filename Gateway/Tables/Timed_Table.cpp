@@ -1,5 +1,5 @@
 #include "Timed_Table.hpp"
-#include "logger.hpp"
+#include "../logger.hpp"
 
 
 //Starts the decrement thread for the table
