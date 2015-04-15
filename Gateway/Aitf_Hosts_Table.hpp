@@ -9,25 +9,19 @@
 #include <boost/asio.hpp>
 
 #include "Filter_Info.hpp"
+#include "Timed_Table.hpp"
 
-class Aitf_Hosts_Table{
-	
+class Aitf_Hosts_Table : public Timed_Table{
+
 	public:
 		Aitf_Hosts_Table();
 		~Aitf_Hosts_Table();
-		void start_thread();
-		void stop_thread();
 		bool check_from_rate(uint32_t ip);
 
 
 	private:
-		void run();
 		void decrement_from(const boost::system::error_code& e, boost::shared_ptr<boost::asio::deadline_timer> timer, uint32_t ip);
 		std::unordered_map<uint32_t, Filter_Info*> hosts;
-		boost::mutex table_mutex;
-		boost::thread table_thread;
-		boost::asio::io_service table_io;
-		boost::shared_ptr<boost::asio::io_service::work> table_work;
 };
 
 extern Aitf_Hosts_Table* aitf_hosts_table;

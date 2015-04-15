@@ -16,7 +16,7 @@ Aitf_Hosts_Table::~Aitf_Hosts_Table(){
 }
 
 bool Aitf_Hosts_Table::check_from_rate(uint32_t ip){
-	
+
 	//lock the table
 	table_mutex.lock();
 
@@ -64,24 +64,4 @@ void Aitf_Hosts_Table::decrement_from(const boost::system::error_code& e, boost:
 
 	//unlock the table
 	table_mutex.unlock();
-}
-
-//Starts the decrement thread for the table
-void Aitf_Hosts_Table::start_thread(){
-	table_thread = boost::thread(&Aitf_Hosts_Table::run, this);
-}
-
-//Stops the iowork and joins the thread
-void Aitf_Hosts_Table::stop_thread(){
-	log(logINFO) << "stopping table thread";
-	table_work.reset();
-	log(logDEBUG) << "work reset";
-	table_thread.join();
-	log(logINFO) << "table thread stopped";
-}
-
-//Starts the iowork
-void Aitf_Hosts_Table::run(){
-	table_work.reset(new boost::asio::io_service::work(table_io));
-	table_io.run();
 }

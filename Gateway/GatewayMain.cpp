@@ -11,23 +11,23 @@ Aitf_Hosts_Table* aitf_hosts_table;
 
 void set_log_level(int level){
 	switch(level){
-	case 0: loglevel = logERROR;
-		break;
-	case 1: loglevel = logWARNING;
-		break;
-	case 2: loglevel = logINFO;
-		break;
-	case 3: loglevel = logDEBUG;
-		break;
-	case 4: loglevel = logDEBUG2;
-		break;
+		case 0: loglevel = logERROR;
+			break;
+		case 1: loglevel = logWARNING;
+			break;
+		case 2: loglevel = logINFO;
+			break;
+		case 3: loglevel = logDEBUG;
+			break;
+		case 4: loglevel = logDEBUG2;
+			break;
 	}
 }
 
 /*
-Maim function for the Gateway. Initaites the AITF manager and
-the internet traffic manager
-*/
+   Main function for the Gateway. Initaites the AITF manager and
+   the internet traffic manager
+ */
 int main(){
 
 	set_log_level(4);
