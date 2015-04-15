@@ -8,6 +8,7 @@
 
 loglevel_e loglevel = logERROR;
 Aitf_Hosts_Table* aitf_hosts_table;
+Filter_Table* filter_table;
 
 void set_log_level(int level){
 	switch(level){
@@ -34,6 +35,8 @@ int main(){
 
 	aitf_hosts_table = new Aitf_Hosts_Table();
 	aitf_hosts_table->start_thread();
+	filter_table = new Filter_Table();
+	filter_table->start_thread();
 
 	Aitf_Manager* aitf_manager = new Aitf_Manager();
 	aitf_manager->start_thread();
@@ -48,11 +51,13 @@ int main(){
 
 	//stop table threads
 	aitf_hosts_table->stop_thread();
+	filter_table->stop_thread();
 
 	//cleanup
 	delete(aitf_manager);
 
 	delete(aitf_hosts_table);
+	delete(filter_table);
 
 }
 

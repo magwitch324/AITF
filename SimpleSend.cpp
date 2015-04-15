@@ -16,8 +16,10 @@ udp::resolver resolver(io_service);
 
 
 	uint8_t message [84] = {};
-	uint32_t ip = 99;
-	memcpy(&message[77], &ip, 4);
+	uint32_t dst_ip = 99;
+	uint32_t src_ip = 202;
+	memcpy(&message[78], &dst_ip, 4);
+	memcpy(&message[1], &src_ip, 4);
 
 	socket.send_to(boost::asio::buffer(message), receiver_endpoint);
 }

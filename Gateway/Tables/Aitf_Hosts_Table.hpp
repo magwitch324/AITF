@@ -1,5 +1,5 @@
-#ifndef AITF_HOSTS_TABLE
-#define AITF_HOSTS_TABLE
+#ifndef AITF_HOSTS_TABLE_HPP
+#define AITF_HOSTS_TABLE_HPP
 
 #include <unordered_map>
 #include <boost/bind.hpp>

@@ -4,7 +4,7 @@
 #include "Aitf_Manager.hpp"
 #include "Udp_Server.hpp"
 
-#define DST_INDEX 77
+#define DST_REQ_INDEX 78
 
 Aitf_Manager::Aitf_Manager(){
 
@@ -61,12 +61,16 @@ void Aitf_Manager::handle_request(std::vector<uint8_t> message){
 
 		//pull out the dst_ip
 		uint32_t dst_ip;
-		memcpy(&dst_ip, &message[DST_INDEX], 4);
+		memcpy(&dst_ip, &message[DST_REQ_INDEX], 4);
 
 		//if the victim is within its rate limit
 		if(aitf_hosts_table->check_from_rate(dst_ip)){
 
+			uint8_t flow[81];
+			memcpy(&flow, &message[1], 81);
 			//apply temp filter
+			filter_table->add_temp_filter(flow);
+
 			//check shadow table
 
 			//check route length
