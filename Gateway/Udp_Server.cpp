@@ -41,21 +41,16 @@ void Udp_Server::udp_listen(){
 
 //Called when a udp packet is received
 void Udp_Server::handle_receive(const boost::system::error_code& error,
-		std::size_t){
-	log(logINFO) << "Receiving message";
-
-	//extract the type of message
-	uint8_t type = recv_buff[0];
-	log(logDEBUG) << "Message type: " << (int) type; 
+		std::size_t size){
+	log(logINFO) << "-------------------Receiving message-------------------";
 
 	//copy out the data
-	std::vector<uint8_t> data(recv_buff.begin() + 1, recv_buff.end());
-
+	std::vector<uint8_t> data(recv_buff.begin(), recv_buff.begin() + size);
 	//listen for new connections
 	udp_listen();
 
 	//pass the packet to the listener
-	listener->packet_arrived(type, data);
+	listener->packet_arrived(data);
 
 }
 

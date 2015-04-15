@@ -13,7 +13,11 @@ udp::resolver resolver(io_service);
 	udp::socket socket(io_service);
 	socket.open(udp::v4());
 
-	boost::shared_ptr<std::string> message(new std::string("Transfer"));
 
-	socket.send_to(boost::asio::buffer(*message), receiver_endpoint);
+
+	uint8_t message [84] = {};
+	uint32_t ip = 99;
+	memcpy(&message[77], &ip, 4);
+
+	socket.send_to(boost::asio::buffer(message), receiver_endpoint);
 }
