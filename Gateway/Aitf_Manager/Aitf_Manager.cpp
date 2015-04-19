@@ -15,19 +15,44 @@ void Aitf_Manager::run(){
 	server->start();
 }
 
+void Aitf_Manager::timeout_run(){
+	timeout_work.reset(new boost::asio::io_service::work(timeout_io));
+	timeout_io.run();
+}
+
 void Aitf_Manager::start_thread(){
 	log(logINFO) << "starting Aitf_Manager";
 	aitf_thread = boost::thread(&Aitf_Manager::run, this);
+	timeout_thread = boost::thread(&Aitf_Manager::timeout_run, this);
 
 }
 
 void Aitf_Manager::stop_thread(){
 	log(logINFO) << "Stopping aitf manager";
+
+
 	server->stop();
-	delete(server);
-	log(logDEBUG2) << "server deltetd";
+
+	//stop timeout thread
+	log(logDEBUG2) << "stopping timeout thread";
+	timeout_work.reset();
+	timeout_io.stop();
+	timeout_thread.interrupt();
+	timeout_thread.join();
+	log(logDEBUG2) << "timeout thread stopped";
+
+	log(logDEBUG2) << "stopping aitf thread";
 	aitf_thread.interrupt();
 	aitf_thread.join();
+	log(logDEBUG2) << "aitf thread stopped";
+
+
+
+	log(logDEBUG2) << "deleting server";
+	delete(server);
+	log(logDEBUG2) << "server deltetd";
+
+
 	log(logINFO) << "Aitf manager stopped";
 }
 
@@ -72,19 +97,49 @@ void Aitf_Manager::handle_request(std::vector<uint8_t> message){
 			filter_table->add_temp_filter(flow);
 
 			//check shadow table
+			bool repeat_request = true;// shadow_table->check_request(flow);
 
 			//check route length
+			uint8_t flow_ptr = flow[4];
 
-			//if 1 handle attacker
+			//if there is only one gateway in the list, then this gateway
+			//must deal with it
+			if(flow_ptr == 0){
+				uint32_t src_ip;
+				memcpy(&src_ip, &flow[0], 4);
+				//if the host is AITF enabled
+				if(aitf_hosts_table->contains_host(src_ip)){
+					//if this is a repeat offense
+					if(repeat_request){
+						filter_table->add_long_filter(flow);
+					}
+					else{
+						//contact host
+						//TODO CONTACT HOST!!!
 
-			//if more
+						boost::shared_ptr<boost::asio::deadline_timer> timer(new boost::asio::deadline_timer(timeout_io, boost::posix_time::seconds(TEMP_TIME)));
+						timer->async_wait(boost::bind(&Aitf_Manager::unresponsive_host, this, boost::asio::placeholders::error, timer, flow));
+					}
+				}
+			}
+			else{
+				//insert gateway filter for response
 
-			//insert gateway filter for response
+				//send handshake
+			}
 
-			//send handshake
+			//add shadow filter
+
+
 		}
 	}
 	else{
 		log(logWARNING) << "Message size is incorrect!!: " << message.size();
 	}
+}
+
+void Aitf_Manager::unresponsive_host(const boost::system::error_code& e, boost::shared_ptr<boost::asio::deadline_timer> timer, uint8_t flow[]){
+	//TODO check shadow table that the flow is now there
+	//if it isnt disconnect the host
+	filter_table->add_long_filter(flow);
 }

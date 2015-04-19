@@ -17,6 +17,7 @@ class Aitf_Hosts_Table : public Timed_Table{
 		Aitf_Hosts_Table();
 		~Aitf_Hosts_Table();
 		bool check_from_rate(uint32_t ip);
+		bool contains_host(uint32_t ip);
 
 
 	private:

@@ -1,7 +1,6 @@
 #include "Filter_Set.hpp"
 #include "../logger.hpp"
 
-
 Flow::Flow(uint8_t new_flow[]){
 	std::vector<uint8_t> tmp(new_flow, new_flow+81);
 	flow = tmp;
@@ -13,8 +12,16 @@ Filter_Set::Filter_Set(boost::mutex* mutex_, boost::asio::io_service* table_io_)
 }
 
 void Filter_Set::add_temp_filter(uint8_t flow[]){
+	add_filter(flow, TEMP_TIME);
+}
 
-	log(logDEBUG2) << "In filterset add temp filter";
+void Filter_Set::add_long_filter(uint8_t flow[]){
+	add_filter(flow, LONG_TIME);
+}
+
+void Filter_Set::add_filter(uint8_t flow[], int secs){
+
+	log(logDEBUG2) << "In filterset add filter " << secs;
 	//determine the type of filter
 	//pull out the source
 	uint32_t src_ip;
@@ -43,15 +50,15 @@ void Filter_Set::add_temp_filter(uint8_t flow[]){
 		gateway_filters[gtw_ip]++;
 
 		//add callback
-		boost::shared_ptr<boost::asio::deadline_timer> timer(new boost::asio::deadline_timer(*table_io, boost::posix_time::seconds(1)));
-		timer->async_wait(boost::bind(&Filter_Set::decrement_gateway_filter, this, boost::asio::placeholders::error, timer, gtw_ip));
+		boost::shared_ptr<boost::asio::deadline_timer> timer(new boost::asio::deadline_timer(*table_io, boost::posix_time::seconds(secs)));
+		timer->async_wait(boost::bind(&Filter_Set::decrement_gateway_filter, this, boost::asio::placeholders::error, timer, secs, gtw_ip));
 
 
 	}
 	else{
 		//add to the flow_filters
 		Flow* c_flow = new Flow(flow);
-		
+
 		//check if there is already a filter in place
 		if(flow_filters.count(*c_flow) == 0){
 			flow_filters[*c_flow] = 0;
@@ -61,17 +68,16 @@ void Filter_Set::add_temp_filter(uint8_t flow[]){
 		flow_filters[*c_flow]++;
 
 		log(logINFO) << "Filter made for " << src_ip << ". count at " << flow_filters[*c_flow];
-		
+
 		//add callback
-		boost::shared_ptr<boost::asio::deadline_timer> timer(new boost::asio::deadline_timer(*table_io, boost::posix_time::seconds(1)));
-		timer->async_wait(boost::bind(&Filter_Set::decrement_flow_filter, this, boost::asio::placeholders::error, timer, c_flow));
+		boost::shared_ptr<boost::asio::deadline_timer> timer(new boost::asio::deadline_timer(*table_io, boost::posix_time::seconds(secs)));
+		timer->async_wait(boost::bind(&Filter_Set::decrement_flow_filter, this, boost::asio::placeholders::error, timer, secs, c_flow));
 
 	}
 }
 
 
-
-void Filter_Set::decrement_flow_filter(const boost::system::error_code& e, boost::shared_ptr<boost::asio::deadline_timer> timer, Flow* flow){
+void Filter_Set::decrement_flow_filter(const boost::system::error_code& e, boost::shared_ptr<boost::asio::deadline_timer> timer, int secs, Flow* flow){
 	//reset the timer
 	timer.reset();
 
@@ -98,7 +104,7 @@ void Filter_Set::decrement_flow_filter(const boost::system::error_code& e, boost
 	table_mutex->unlock();
 }
 
-void Filter_Set::decrement_gateway_filter(const boost::system::error_code& e, boost::shared_ptr<boost::asio::deadline_timer> timer, uint32_t gtw_ip){
+void Filter_Set::decrement_gateway_filter(const boost::system::error_code& e, boost::shared_ptr<boost::asio::deadline_timer> timer, int secs, uint32_t gtw_ip){
 	//reset the timer
 	timer.reset();
 

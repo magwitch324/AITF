@@ -6,7 +6,7 @@ using boost::asio::ip::udp;
 
 int main(){
 	boost::asio::io_service io_service;
-udp::resolver resolver(io_service);
+	udp::resolver resolver(io_service);
 	udp::resolver::query query(udp::v4(),"127.0.0.1","13");
 	udp::endpoint receiver_endpoint = *resolver.resolve(query);
 
@@ -14,9 +14,9 @@ udp::resolver resolver(io_service);
 	socket.open(udp::v4());
 
 	uint8_t msg_type = 0;
-	uint32_t src_ip = 0;
-	uint8_t ptr = 5;
-	
+	uint32_t src_ip = 99;
+	uint8_t ptr = 0;
+
 	uint32_t gtw1_ip = 20;
 	uint64_t gtw1_rval = 120;
 
@@ -36,7 +36,7 @@ udp::resolver resolver(io_service);
 	uint64_t gtw6_rval = 125;
 
 	uint32_t dst_ip = 99;
-	
+
 
 	uint8_t message [84] = {};
 

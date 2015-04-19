@@ -51,6 +51,13 @@ bool Aitf_Hosts_Table::check_from_rate(uint32_t ip){
 	return allowed;
 }
 
+bool Aitf_Hosts_Table::contains_host(uint32_t ip){
+	table_mutex.lock();
+	bool result = (hosts.count(ip) != 0);
+	table_mutex.unlock();
+	return result;
+}
+
 //Called by the async timer on the seperate thread.
 //Decrements the from count for the specified thread.
 void Aitf_Hosts_Table::decrement_from(const boost::system::error_code& e, boost::shared_ptr<boost::asio::deadline_timer> timer, uint32_t ip){
