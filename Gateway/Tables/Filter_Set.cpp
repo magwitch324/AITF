@@ -22,7 +22,31 @@ void Filter_Set::add_temp_filter(uint8_t flow[]){
 
 	//if the filter is a * filter
 	if(src_ip == 0){
-		log(logINFO) << "Creating filter for *";
+
+
+		//pullout the last gateway IP
+		uint32_t gtw_ip;
+		uint8_t ptr = flow[4];
+		if(ptr > 5){
+			log(logERROR) << "Flow pointer too big!!!";
+			return;
+		}
+		memcpy(&gtw_ip, &flow[5+ptr*12], 4);
+		log(logINFO) << "Creating * filter for " << gtw_ip;
+
+		//check if there is already a filter made
+		if(gateway_filters.count(gtw_ip) == 0){
+			gateway_filters[gtw_ip] = 0;
+		}
+
+		//increment the filter requests value
+		gateway_filters[gtw_ip]++;
+
+		//add callback
+		boost::shared_ptr<boost::asio::deadline_timer> timer(new boost::asio::deadline_timer(*table_io, boost::posix_time::seconds(1)));
+		timer->async_wait(boost::bind(&Filter_Set::decrement_gateway_filter, this, boost::asio::placeholders::error, timer, gtw_ip));
+
+
 	}
 	else{
 		//add to the flow_filters
@@ -45,8 +69,10 @@ void Filter_Set::add_temp_filter(uint8_t flow[]){
 	}
 }
 
+
+
 void Filter_Set::decrement_flow_filter(const boost::system::error_code& e, boost::shared_ptr<boost::asio::deadline_timer> timer, Flow* flow){
-	//free the timer
+	//reset the timer
 	timer.reset();
 
 	//lock the table
@@ -67,6 +93,33 @@ void Filter_Set::decrement_flow_filter(const boost::system::error_code& e, boost
 	}
 	else{
 		log(logERROR) << "Flow does not exits!!!!!";
+	}
+
+	table_mutex->unlock();
+}
+
+void Filter_Set::decrement_gateway_filter(const boost::system::error_code& e, boost::shared_ptr<boost::asio::deadline_timer> timer, uint32_t gtw_ip){
+	//reset the timer
+	timer.reset();
+
+	//lock the table
+	table_mutex->lock();
+
+	//check to make sure the gateway ip exists
+	if(gateway_filters.count(gtw_ip) == 1){
+
+		//check if this decrement should remove the filter
+		if(gateway_filters[gtw_ip] == 1){
+			log(logDEBUG) << "Deleting filter";
+			gateway_filters.erase(gtw_ip);
+		}
+		else{
+			log(logDEBUG) << "Decrementing filter";
+			gateway_filters[gtw_ip]--;
+		}
+	}
+	else{
+		log(logERROR) << "Gateway ip does not exits!!!!!";
 	}
 
 	table_mutex->unlock();

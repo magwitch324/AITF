@@ -43,7 +43,9 @@ class Filter_Set{
 
 	private:
 		void decrement_flow_filter(const boost::system::error_code& e, boost::shared_ptr<boost::asio::deadline_timer> timer, Flow* flow);
+		void decrement_gateway_filter(const boost::system::error_code& e, boost::shared_ptr<boost::asio::deadline_timer> timer, uint32_t gtw_ip);
 		std::unordered_map<Flow, int, KeyHasher> flow_filters;
+		std::unordered_map<uint32_t, int> gateway_filters;
 		boost::mutex* table_mutex;
 		boost::asio::io_service* table_io;
 };
