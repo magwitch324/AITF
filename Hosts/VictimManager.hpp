@@ -8,13 +8,13 @@
 #ifndef VICTIMMANAGER_HPP_
 #define VICTIMMANAGER_HPP_
 
-
+#include <linux/kernel.h>	/* Needed for KERN_INFO */
 #include <linux/netfilter.h>
 #include <linux/netfilter_ipv4.h>
 
 class VictimManager {
 	public:
-		static void performStatistics();
+		void performStatistics();
 
 };
 

@@ -4,10 +4,10 @@
 
 #include "AttackManager.hpp"
 
-static void AttackManager::aitfCommunication() {
+void AttackManager::aitfCommunication() {
 
 }
 
-static int AttackManager::performFilter() {
+unsigned int AttackManager::performFilter() {
 	return NF_ACCEPT;
 }

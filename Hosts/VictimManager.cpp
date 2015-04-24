@@ -4,6 +4,6 @@
 
 #include "VictimManager.hpp"
 
-static void VictimManager::performStatistics() {
+void VictimManager::performStatistics() {
 
 }
