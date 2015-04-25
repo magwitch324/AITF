@@ -3,6 +3,7 @@
 #include "../logger.hpp"
 #include "Aitf_Manager.hpp"
 #include "Udp_Server.hpp"
+#include "../Hasher.hpp"
 
 #define DST_REQ_INDEX 78
 
@@ -93,8 +94,7 @@ void Aitf_Manager::handle_handshake_request(std::vector<uint8_t> message){
 		//if the gateway is within its rate limit
 		if(aitf_hosts_table->check_from_rate(gtw_ip)){
 
-			uint8_t flow[81];
-			memcpy(&flow, &message[5], 81);
+			std::vector<uint8_t> flow(&message[5], &message[5]+81);
 
 			//pull out the dst_ip, atk_gtw_value and random value
 			uint32_t dst_ip;
@@ -108,14 +108,18 @@ void Aitf_Manager::handle_handshake_request(std::vector<uint8_t> message){
 			memcpy(&dst_ip, &flow[77], 4);
 			memcpy(&atk_gtw_ip, &flow[5+ptr*12], 4);
 			memcpy(&r_value, &flow[5+ptr*12+4], 8);
+			log(logDEBUG) << "dst: " << dst_ip << " atk_gtw_ip: " << atk_gtw_ip << " r_value: " << r_value;
 
 			//check that the random value in the flow is correct
 			//compute the hash
-			std::vector<uint8_t> data(&dst_ip, &dst_ip+4);
-			log(logDEBUG2) << "vector size is " << data.size();
-			//uint64_t actual = Hasher::hash(key, )
-
-			//if(r_value)
+			uint64_t actual = Hasher::hash(*gateway_key, (unsigned char*) &dst_ip, 4);
+			log(logDEBUG2) << "actual: " << actual << " r_value: " << r_value;
+			if(r_value == actual){
+				log(logDEBUG) << "CORRECT HASH";
+			}
+			else{
+				log(logDEBUG) << "INCORRECT HASH";
+			}
 		}
 	}
 }
@@ -133,12 +137,14 @@ void Aitf_Manager::handle_filter_request(std::vector<uint8_t> message){
 		//if the victim is within its rate limit
 		if(aitf_hosts_table->check_from_rate(dst_ip)){
 
-			uint8_t flow[81];
-			memcpy(&flow, &message[1], 81);
+			std::vector<uint8_t> flow(&message[1], &message[1]+81);
+			for(int i = 0; i < 83; i++){
+				log(logERROR) << (int) message[i];
+			}
 			//apply temp filter
 			filter_table->add_temp_filter(flow);
 
-			/*log(logDEBUG2) << "checking shadow table";
+			log(logDEBUG2) << "checking shadow table";
 			//check shadow table
 			bool repeat_request = shadow_table->is_flow_filtered(flow);
 
@@ -161,7 +167,6 @@ void Aitf_Manager::handle_filter_request(std::vector<uint8_t> message){
 						//contact host
 						//TODO CONTACT HOST!!!
 						//send udp packet
-
 						boost::shared_ptr<boost::asio::deadline_timer> timer(new boost::asio::deadline_timer(timeout_io, boost::posix_time::seconds(TEMP_TIME)));
 						timer->async_wait(boost::bind(&Aitf_Manager::unresponsive_host, this, boost::asio::placeholders::error, timer, flow));
 					}
@@ -171,7 +176,7 @@ void Aitf_Manager::handle_filter_request(std::vector<uint8_t> message){
 				//insert gateway filter for response
 
 				//send handshake
-			}*/
+			}
 		}
 	}
 	else{
@@ -179,7 +184,8 @@ void Aitf_Manager::handle_filter_request(std::vector<uint8_t> message){
 	}
 }
 
-void Aitf_Manager::unresponsive_host(const boost::system::error_code& e, boost::shared_ptr<boost::asio::deadline_timer> timer, uint8_t flow[]){
+void Aitf_Manager::unresponsive_host(const boost::system::error_code& e, boost::shared_ptr<boost::asio::deadline_timer> timer, std::vector<uint8_t> flow){
+	log(logDEBUG2) << "In unresponsive_host callback";
 
 	//if the flow has not been added to the table then cut off the client
 	if(!shadow_table->is_flow_filtered(flow)){

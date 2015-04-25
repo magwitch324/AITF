@@ -5,7 +5,7 @@
 
 class Hasher{
 	public:
-		static std::vector<uint8_t> hash(std::string key, unsigned char* data, int data_len);
+		static uint64_t hash(std::string key, unsigned char* data, int data_len);
 };
 
 extern std::string* gateway_key;

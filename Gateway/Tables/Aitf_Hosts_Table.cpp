@@ -8,7 +8,11 @@ Aitf_Hosts_Table::Aitf_Hosts_Table(){
 	Filter_Info* info = new Filter_Info();
 	info->from_amount = 0;
 	info->from_limit = 2;
+	Filter_Info* info2 = new Filter_Info();
+	info2->from_amount = 0;
+	info2->from_limit = 2;
 	hosts[99] = info;
+	hosts[2] = info2;
 }
 
 Aitf_Hosts_Table::~Aitf_Hosts_Table(){
@@ -43,6 +47,9 @@ bool Aitf_Hosts_Table::check_from_rate(uint32_t ip){
 		else{
 			log(logDEBUG2) << "Denying request for " << ip;
 		}
+	}
+	else{
+		log(logDEBUG2) << "Denying request for " << ip;
 	}
 
 	//unlock the table

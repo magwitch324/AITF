@@ -1,9 +1,8 @@
 #include "Filter_Set.hpp"
 #include "../logger.hpp"
 
-Flow::Flow(uint8_t new_flow[]){
-	std::vector<uint8_t> tmp(new_flow, new_flow+81);
-	flow = tmp;
+Flow::Flow(std::vector<uint8_t> new_flow){
+	flow = new_flow;
 }
 
 Filter_Set::Filter_Set(boost::mutex* mutex_, boost::asio::io_service* table_io_){
@@ -11,15 +10,19 @@ Filter_Set::Filter_Set(boost::mutex* mutex_, boost::asio::io_service* table_io_)
 	table_io = table_io_;
 }
 
-void Filter_Set::add_temp_filter(uint8_t flow[]){
+Filter_Set::Filter_Set(){
+	
+}
+
+void Filter_Set::add_temp_filter(std::vector<uint8_t> flow){
 	add_filter(flow, TEMP_TIME);
 }
 
-void Filter_Set::add_long_filter(uint8_t flow[]){
+void Filter_Set::add_long_filter(std::vector<uint8_t> flow){
 	add_filter(flow, LONG_TIME);
 }
 
-void Filter_Set::add_filter(uint8_t flow[], int secs){
+void Filter_Set::add_filter(std::vector<uint8_t> flow, int secs){
 
 	log(logDEBUG2) << "In filterset add filter " << secs;
 	//determine the type of filter
@@ -71,7 +74,7 @@ void Filter_Set::add_filter(uint8_t flow[], int secs){
 	}
 }
 
-bool Filter_Set::is_flow_filtered(uint8_t flow[]){
+bool Filter_Set::is_flow_filtered(std::vector<uint8_t> flow){
 	log(logDEBUG2) << "in filterset is flow filtered";
 	bool is_filtered = false;
 	//determine the type of filter
