@@ -3,8 +3,6 @@
 #include <linux/netfilter.h>
 #include <linux/netfilter_ipv4.h>
 
-#include "AttackManager.hpp"
-#include "VictimManager.hpp"
 
 /* nf_hook_ops format:
  * 		hook: the function to be called by the hook. Must return (NF_DROP, NF_ACCEPT, NF_STOLEN, NF_QUEUE, NF_REPEAT, NF_STOP)
@@ -16,25 +14,13 @@
 static struct nf_hook_ops localOutHookStruct;
 static struct nf_hook_ops localInHookStruct;
 
-VictimManager * victimmanager;
-AttackManager * attackmanager;
-
-
-static bool isAITFCommunication( unsigned int hooknum,
-									struct sk_buff *skb,
-									const struct net_device *in,
-									const struct net_device *out ) {
-
-	return false;
-}
-
 static unsigned int localOutHookFunc( unsigned int hooknum,
 	       						struct sk_buff *skb,
 								const struct net_device *in,
 								const struct net_device *out,
 								int (*okfn)(struct sk_buff *) ) {
 
-	return attackmanager->performFilter();
+	return NF_DROP;
 }
 
 static unsigned int localInHookStruct( unsigned int hooknum,
@@ -43,21 +29,10 @@ static unsigned int localInHookStruct( unsigned int hooknum,
 								const struct net_device *out,
 								int (*okfn)(struct sk_buff *) ) {
 
-	if ( isAITFCommunication(hooknum, skb, in, out) ) {
-		attackmanager->aitfCommunication();
-		return NF_DROP;
-	} else {
-		victimmanager->performStatistics();
-	}
-
 	return NF_ACCEPT;
 }
 
-static int  init_main(void) {
-
-	victimmanager = new VictimManager;
-	attackmanager = new AttackManager;
-
+static int __init init_main(void) {
 
 	localOutHookStruct.hook     = localOutHookFunc;
 	localOutHookStruct.hooknum  = NF_INET_LOCAL_OUT;
@@ -75,7 +50,7 @@ static int  init_main(void) {
 	return 0;
 }
 
-static void cleanup_main(void) {
+static void __exit cleanup_main(void) {
 	nf_unregister_hook(&localOutHookStruct);
 	nf_unregister_hook(&localInHookStruct);
 }
