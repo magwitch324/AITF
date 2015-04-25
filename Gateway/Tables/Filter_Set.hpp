@@ -44,6 +44,7 @@ class Filter_Set{
 		Filter_Set(boost::mutex* mutex_, boost::asio::io_service* table_io_);
 		void add_temp_filter(uint8_t flow[]);
 		void add_long_filter(uint8_t flow[]);
+		bool is_flow_filtered(uint8_t flow[]);
 
 	private:
 		void add_filter(uint8_t flow[], int secs);

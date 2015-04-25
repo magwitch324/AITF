@@ -21,27 +21,27 @@ AttackManager * attackmanager;
 
 
 static bool isAITFCommunication( unsigned int hooknum,
-									struct sk_buff *skb,
-									const struct net_device *in,
-									const struct net_device *out ) {
+		struct sk_buff *skb,
+		const struct net_device *in,
+		const struct net_device *out ) {
 
 	return false;
 }
 
 static unsigned int localOutHookFunc( unsigned int hooknum,
-	       						struct sk_buff *skb,
-								const struct net_device *in,
-								const struct net_device *out,
-								int (*okfn)(struct sk_buff *) ) {
+		struct sk_buff *skb,
+		const struct net_device *in,
+		const struct net_device *out,
+		int (*okfn)(struct sk_buff *) ) {
 
 	return attackmanager->performFilter();
 }
 
 static unsigned int localInHookStruct( unsigned int hooknum,
-	       						struct sk_buff *skb,
-								const struct net_device *in,
-								const struct net_device *out,
-								int (*okfn)(struct sk_buff *) ) {
+		struct sk_buff *skb,
+		const struct net_device *in,
+		const struct net_device *out,
+		int (*okfn)(struct sk_buff *) ) {
 
 	if ( isAITFCommunication(hooknum, skb, in, out) ) {
 		attackmanager->aitfCommunication();
