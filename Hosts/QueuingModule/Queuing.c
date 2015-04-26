@@ -20,7 +20,7 @@ static unsigned int localOutHookFunc( unsigned int hooknum,
 								const struct net_device *out,
 								int (*okfn)(struct sk_buff *) ) {
 
-	return NF_DROP;
+	return NF_QUEUE;
 }
 
 static unsigned int localInHookStruct( unsigned int hooknum,
@@ -29,7 +29,7 @@ static unsigned int localInHookStruct( unsigned int hooknum,
 								const struct net_device *out,
 								int (*okfn)(struct sk_buff *) ) {
 
-	return NF_ACCEPT;
+	return NF_QUEUE;
 }
 
 static int __init init_main(void) {
