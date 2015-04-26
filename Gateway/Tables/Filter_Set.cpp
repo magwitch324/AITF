@@ -1,9 +1,8 @@
 #include "Filter_Set.hpp"
 #include "../logger.hpp"
 
-Flow::Flow(uint8_t new_flow[]){
-	std::vector<uint8_t> tmp(new_flow, new_flow+81);
-	flow = tmp;
+Flow::Flow(std::vector<uint8_t> new_flow){
+	flow = new_flow;
 }
 
 Filter_Set::Filter_Set(boost::mutex* mutex_, boost::asio::io_service* table_io_){
@@ -11,15 +10,19 @@ Filter_Set::Filter_Set(boost::mutex* mutex_, boost::asio::io_service* table_io_)
 	table_io = table_io_;
 }
 
-void Filter_Set::add_temp_filter(uint8_t flow[]){
+Filter_Set::Filter_Set(){
+	
+}
+
+void Filter_Set::add_temp_filter(std::vector<uint8_t> flow){
 	add_filter(flow, TEMP_TIME);
 }
 
-void Filter_Set::add_long_filter(uint8_t flow[]){
+void Filter_Set::add_long_filter(std::vector<uint8_t> flow){
 	add_filter(flow, LONG_TIME);
 }
 
-void Filter_Set::add_filter(uint8_t flow[], int secs){
+void Filter_Set::add_filter(std::vector<uint8_t> flow, int secs){
 
 	log(logDEBUG2) << "In filterset add filter " << secs;
 	//determine the type of filter
@@ -33,12 +36,7 @@ void Filter_Set::add_filter(uint8_t flow[], int secs){
 
 		//pullout the last gateway IP
 		uint32_t gtw_ip;
-		uint8_t ptr = flow[4];
-		if(ptr > 5){
-			log(logERROR) << "Flow pointer too big!!!";
-			return;
-		}
-		memcpy(&gtw_ip, &flow[5+ptr*12], 4);
+		memcpy(&gtw_ip, &flow[5], 4);
 		log(logINFO) << "Creating * filter for " << gtw_ip;
 
 		//check if there is already a filter made
@@ -76,6 +74,37 @@ void Filter_Set::add_filter(uint8_t flow[], int secs){
 	}
 }
 
+bool Filter_Set::is_flow_filtered(std::vector<uint8_t> flow){
+	log(logDEBUG2) << "in filterset is flow filtered";
+	bool is_filtered = false;
+	//determine the type of filter
+	//pull out the source
+	uint32_t src_ip;
+	memcpy(&src_ip, &flow[0], 4);
+
+	//if the filter is a * filter
+	if(src_ip == 0){
+
+		//pullout the last gateway IP
+		uint32_t gtw_ip;
+		memcpy(&gtw_ip, &flow[5], 4);
+
+		is_filtered = (gateway_filters.count(gtw_ip) == 1);
+	}
+	else{
+		log(logDEBUG2) << "creating flow";
+		Flow* c_flow = new Flow(flow);
+		log(logDEBUG2) << "checking table";
+		flow_filters.count(*c_flow);
+		//is_filtered = (flow_filters.count(*c_flow) == 1);
+		log(logDEBUG2) << "deleting flow";
+		delete(c_flow);
+	}
+
+	return is_filtered;
+
+}
+
 
 void Filter_Set::decrement_flow_filter(const boost::system::error_code& e, boost::shared_ptr<boost::asio::deadline_timer> timer, int secs, Flow* flow){
 	//reset the timer
@@ -100,7 +129,7 @@ void Filter_Set::decrement_flow_filter(const boost::system::error_code& e, boost
 	else{
 		log(logERROR) << "Flow does not exits!!!!!";
 	}
-
+	delete(flow);
 	table_mutex->unlock();
 }
 

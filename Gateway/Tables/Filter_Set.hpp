@@ -15,7 +15,7 @@
 
 class Flow {
 	public:
-		Flow(uint8_t flow[]);
+		Flow(std::vector<uint8_t> flow);
 		std::vector<uint8_t> flow;
 
 		bool operator==(const Flow &other) const
@@ -41,12 +41,14 @@ struct KeyHasher{
 
 class Filter_Set{
 	public:
+		Filter_Set();
 		Filter_Set(boost::mutex* mutex_, boost::asio::io_service* table_io_);
-		void add_temp_filter(uint8_t flow[]);
-		void add_long_filter(uint8_t flow[]);
+		void add_temp_filter(std::vector<uint8_t> flow);
+		void add_long_filter(std::vector<uint8_t> flow);
+		bool is_flow_filtered(std::vector<uint8_t> flow);
 
 	private:
-		void add_filter(uint8_t flow[], int secs);
+		void add_filter(std::vector<uint8_t> flow, int secs);
 		void decrement_flow_filter(const boost::system::error_code& e, boost::shared_ptr<boost::asio::deadline_timer> timer, int secs, Flow* flow);
 		void decrement_gateway_filter(const boost::system::error_code& e, boost::shared_ptr<boost::asio::deadline_timer> timer, int secs, uint32_t gtw_ip);
 		std::unordered_map<Flow, int, KeyHasher> flow_filters;

@@ -16,8 +16,9 @@ class Aitf_Manager : public Packet_Listener
 	private:
 		void run();
 		void timeout_run();
-		void handle_request(std::vector<uint8_t> message);
-		void unresponsive_host(const boost::system::error_code& e, boost::shared_ptr<boost::asio::deadline_timer> timer, uint8_t flow[]);
+		void handle_filter_request(std::vector<uint8_t> message);
+		void handle_handshake_request(std::vector<uint8_t> message);
+		void unresponsive_host(const boost::system::error_code& e, boost::shared_ptr<boost::asio::deadline_timer> timer, std::vector<uint8_t> flow);
 		boost::thread aitf_thread;
 		boost::thread timeout_thread;
 		boost::asio::io_service timeout_io;

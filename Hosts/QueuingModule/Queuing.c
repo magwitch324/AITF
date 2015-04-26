@@ -23,7 +23,7 @@ static unsigned int localOutHookFunc( unsigned int hooknum,
 	return NF_QUEUE;
 }
 
-static unsigned int localInHookStruct( unsigned int hooknum,
+static unsigned int localInHookFunc( unsigned int hooknum,
 	       						struct sk_buff *skb,
 								const struct net_device *in,
 								const struct net_device *out,
@@ -39,7 +39,7 @@ static int __init init_main(void) {
 	localOutHookStruct.pf       = NFPROTO_IPV4;
 	localOutHookStruct.priority = NF_IP_PRI_FIRST;
 
-	localInHookStruct.hook     = localOutHookFunc;
+	localInHookStruct.hook     = localInHookFunc;
 	localInHookStruct.hooknum  = NF_INET_LOCAL_IN;
 	localInHookStruct.pf       = NFPROTO_IPV4;
 	localInHookStruct.priority = NF_IP_PRI_FIRST;
