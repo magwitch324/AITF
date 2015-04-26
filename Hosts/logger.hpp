@@ -71,11 +71,11 @@ class logIt
 
 
 
-#define log(level) \
+#define llog(level) \
 	if (level > loglevel) {} \
 else logIt(level)
 
-#define log2(level, line) \
+#define llog2(level, line) \
 	if (level > loglevel) {} \
 else logIt(level, line)
 

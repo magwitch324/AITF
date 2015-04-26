@@ -3,9 +3,6 @@
  *
  */
 
-#include <boost/thread/mutex.hpp>
-#include <boost/thread.hpp>
-#include <boost/date_time.hpp>
 #include "logger.hpp"
 
 #include "Managers/PacketManager.hpp"
@@ -28,7 +25,7 @@ void set_log_level(int level){
 }
 
 int main(){
-	log(logINFO) << "Starting Main";
+	llog(logINFO) << "Starting Main";
 
 	set_log_level(4);
 
@@ -40,7 +37,7 @@ int main(){
 
 	delete pm;
 
-	log(logINFO) << "Finishing Main";
+	llog(logINFO) << "Finishing Main";
 
 }
 

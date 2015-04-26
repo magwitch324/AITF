@@ -1,18 +1,11 @@
-SOURCE = ./Managers/*.cpp  ./Tables/*.cpp ./*.cpp
+SOURCE = ./Managers/*.cpp ./*.cpp
 
+#-lboost_filesystem -lboost_system -lboost_serialization -lboost_thread -lpthread -lnfnetlink -lnetfilter_queue
 
 all: Host
 
 Host: $(SOURCE) 
-	cd QueuingModule
-	make
-	cd ..
-	
-	g++ -g -std=gnu++11 $(SOURCE) -lboost_filesystem -lboost_system -lboost_serialization -lboost_thread -lpthread -o Host.out
+	g++ -g -std=gnu++11 $(SOURCE) -o Host.out -lboost_filesystem -lboost_system -lboost_serialization -lboost_thread -lpthread -lnfnetlink -lnetfilter_queue
 
 clean:
-	cd QueuingModule
-	make clean
-	cd ..
-	
 	rm -rf *.out *.o

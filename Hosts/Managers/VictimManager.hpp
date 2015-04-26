@@ -11,6 +11,7 @@
 #include <stdlib.h>
 
 #include <libmnl/libmnl.h>
+#include <netinet/in.h>
 #include <linux/netfilter.h>
 #include <linux/netfilter/nfnetlink.h>
 
@@ -20,12 +21,12 @@
 #include <libnetfilter_queue/libnetfilter_queue.h>
 
 class VictimManager {
-public:
-	VictimManager(nfq_handle * a_nfq_handle);
+	public:
+		VictimManager(nfq_handle * a_nfq_handle);
+		~VictimManager();
 
-private:
-	~VictimManager();
-	nfq_q_handle * victim_queue_handle;
+	private:
+		nfq_q_handle * victim_queue_handle;
 
 };
 

@@ -5,9 +5,9 @@
 #ifndef ATTACKMANAGER_HPP
 #define ATTACKMANAGER_HPP
 
-#include <stdlib.h>
-
+//#include <stdlib.h>
 #include <libmnl/libmnl.h>
+#include <netinet/in.h>
 #include <linux/netfilter.h>
 #include <linux/netfilter/nfnetlink.h>
 
@@ -16,13 +16,21 @@
 
 #include <libnetfilter_queue/libnetfilter_queue.h>
 
+#include <boost/atomic.hpp>
+#include <boost/thread.hpp>
+
 class AttackManager {
 	public:
-		AttackManager(nfq_handle * a_nfq_handle);
+		AttackManager(struct nfq_handle * a_nfq_handle);
+		~AttackManager();
 
 	private:
-		~AttackManager();
+		enum {STARTING, STARTED, ENDING, ENDED};
+		mutable boost::atomic<int> state;
+		boost::thread * packet_thread;
 		nfq_q_handle * attack_queue_handle;
+		void packetThreadFunc(struct nfq_handle * a_nfq_handle);
+		//int attack_callback(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg, struct nfq_data *nfad, void *data);
 };
 
 #endif /* ATTACKMANAGER_HPP_ */

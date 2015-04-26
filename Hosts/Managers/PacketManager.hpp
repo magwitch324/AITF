@@ -8,6 +8,7 @@
 #include <stdlib.h>
 
 #include <libmnl/libmnl.h>
+#include <netinet/in.h>
 #include <linux/netfilter.h>
 #include <linux/netfilter/nfnetlink.h>
 
@@ -22,9 +23,9 @@
 class PacketManager {
 	public:
 		PacketManager();
+		~PacketManager();
 
 	private:
-		~PacketManager();
 		struct nfq_handle * my_netfilterqueue_handle;
 		AttackManager * attack_manager;
 		VictimManager * victim_manager;
