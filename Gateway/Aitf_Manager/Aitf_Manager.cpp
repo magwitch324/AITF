@@ -78,16 +78,56 @@ void Aitf_Manager::packet_arrived(std::vector<uint8_t> recv_buf){
 			//We should never receive one of these
 			break;
 		case 3: //Handshake part 3
-
+			handle_handshake_finish(recv_buf);
 			break;
 		case 4: //Attack filter request
 			//We should never receive one of these
 			break;
 		case 5: //Filter request reply
+			handle_filter_reply(recv_buf);
 			break;
 		default:
 			log(logWARNING) << "Invalid message type";
 			break;
+	}
+}
+
+void Aitf_Manager::handle_filter_reply(std::vector<uint8_t> message){
+	if(message.size() == 9){
+		Flow flow;
+		memcpy(&flow.src_ip, &message[1], 4);
+		memcpy(&flow.dst_ip, &message[5], 4);
+		flow.gtw0_ip = MY_IP;
+		flow.gtw0_rvalue = Hasher::hash(*gateway_key, (unsigned char*) &flow.dst_ip, 4);
+
+		//if there was a filter request sent for this flow
+		if(filter_table->attempt_count(flow) > 0){
+			//add to the shadow table
+			shadow_table->add_long_filter(flow);
+		}
+	}
+}
+
+void Aitf_Manager::handle_handshake_finish(std::vector<uint8_t> message){
+	log(logDEBUG2) << "Received handshake finish";
+
+	if(message.size() == 90){
+		Flow flow(std::vector<uint8_t>(&message[1], &message[1] + 81));
+		//check that the nonce is correct
+		uint64_t nonce;
+		memcpy(&nonce, &message[82], 8);
+		uint64_t actual = Hasher::hash(*gateway_key, &flow.to_byte_vector()[0], 81);
+
+		//if the nonce is correct then deal with the attacker
+		if(nonce == actual){
+			filter_table->add_temp_filter(flow);
+
+			log(logDEBUG2) << "checking shadow table";
+			//check shadow table
+			int request_attempts = shadow_table->attempt_count(flow);
+
+			deal_with_attacker(flow, request_attempts);
+		}
 	}
 }
 
@@ -174,29 +214,7 @@ void Aitf_Manager::handle_filter_request(std::vector<uint8_t> message){
 			//if there is only one gateway in the list, then this gateway
 			//must deal with it
 			if(flow.pointer == 0){
-				log(logDEBUG2) << "dealing with attacker";
-
-				//if the host is AITF enabled
-				if(aitf_hosts_table->contains_host(flow.src_ip)){
-					//if this is a repeat offense
-					if(request_attempts  > 0){
-						filter_table->add_long_filter(flow);
-					}
-					else{
-						std::vector<uint8_t> message(flow.to_byte_vector());
-						message.insert(message.begin(), 4);
-						//contact host
-						//TODO CONTACT HOST!!!
-						//send udp packet
-						boost::shared_ptr<boost::asio::deadline_timer> timer(new boost::asio::deadline_timer(timeout_io, boost::posix_time::seconds(TEMP_TIME)));
-						timer->async_wait(boost::bind(&Aitf_Manager::unresponsive_host, this, boost::asio::placeholders::error, timer, flow));
-					}
-				}
-				else{
-					//For non AITF enabled hosts, just cut them off
-					filter_table->add_long_filter(flow);
-
-				}
+				deal_with_attacker(flow, request_attempts);
 			}
 			else{
 				log(logDEBUG2) << "Dealing with another gateway";
@@ -222,7 +240,7 @@ void Aitf_Manager::handle_filter_request(std::vector<uint8_t> message){
 					ammended_flow.pointer = 0;
 
 					std::vector<uint8_t> handshake = create_handshake(ammended_flow);
-					
+
 					//Add filter for returning handshake with src as gtw0_ip
 					Flow handshake_flow(flow);
 					handshake_flow.src_ip = handshake_flow.gtw0_ip;
@@ -244,6 +262,32 @@ void Aitf_Manager::handle_filter_request(std::vector<uint8_t> message){
 	}
 }
 
+void Aitf_Manager::deal_with_attacker(Flow flow, int request_attempts){
+	log(logDEBUG2) << "dealing with attacker";
+
+	//if the host is AITF enabled
+	if(aitf_hosts_table->contains_host(flow.src_ip)){
+		//if this is a repeat offense
+		if(request_attempts  > 0){
+			filter_table->add_long_filter(flow);
+		}
+		else{
+			std::vector<uint8_t> message(flow.to_byte_vector());
+			message.insert(message.begin(), 4);
+			//contact host
+			//TODO CONTACT HOST!!!
+			//send udp packet
+			boost::shared_ptr<boost::asio::deadline_timer> timer(new boost::asio::deadline_timer(timeout_io, boost::posix_time::seconds(TEMP_TIME)));
+			timer->async_wait(boost::bind(&Aitf_Manager::unresponsive_host, this, boost::asio::placeholders::error, timer, flow));
+		}
+	}
+	else{
+		//For non AITF enabled hosts, just cut them off
+		filter_table->add_long_filter(flow);
+
+	}
+}
+
 std::vector<uint8_t> Aitf_Manager::create_handshake(Flow flow){
 	log(logDEBUG2) << "Creating handshake";
 	//generate the nonce
@@ -256,7 +300,7 @@ std::vector<uint8_t> Aitf_Manager::create_handshake(Flow flow){
 	memcpy(&handshake[5], &flow.to_byte_vector()[0], 81);
 	memcpy(&handshake[86], &nonce, 8);
 	log(logDEBUG2) << "Finished creating handshake";
-	
+
 	return handshake;
 }
 
@@ -299,7 +343,7 @@ void Aitf_Manager::attempt_escalation(Flow flow, int attempts){
 	if(attempts < flow.pointer){
 		std::vector<uint8_t> handshake = create_handshake(flow);
 		uint32_t dst_gtw_ip = flow.get_gtw_ip_at(attempts);
-		
+
 		//add filter for response				
 		Flow handshake_flow(flow);
 		handshake_flow.src_ip = dst_gtw_ip;

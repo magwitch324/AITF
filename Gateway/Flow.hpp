@@ -10,6 +10,7 @@ class Flow {
 	public:
 		Flow(std::vector<uint8_t> new_flow);
 		Flow(const Flow& old_flow);
+		Flow();
 		bool operator==(const Flow &other) const;
 		std::vector<uint8_t> to_byte_vector();
 		uint32_t get_gtw_ip_at(uint8_t pointer);
@@ -44,28 +45,28 @@ class Flow {
 struct KeyHasher{
 	std::size_t operator() (const Flow& flow) const{
 		std::size_t seed = 0;
-        boost::hash_combine(seed, flow.src_ip);
-        boost::hash_combine(seed, flow.pointer);
+		boost::hash_combine(seed, flow.src_ip);
+		boost::hash_combine(seed, flow.pointer);
 
-        boost::hash_combine(seed, flow.gtw0_ip);
-        boost::hash_combine(seed, flow.gtw0_rvalue);
+		boost::hash_combine(seed, flow.gtw0_ip);
+		boost::hash_combine(seed, flow.gtw0_rvalue);
 
-        boost::hash_combine(seed, flow.gtw1_ip);
-        boost::hash_combine(seed, flow.gtw1_rvalue);
+		boost::hash_combine(seed, flow.gtw1_ip);
+		boost::hash_combine(seed, flow.gtw1_rvalue);
 
-        boost::hash_combine(seed, flow.gtw2_ip);
-        boost::hash_combine(seed, flow.gtw2_rvalue);
+		boost::hash_combine(seed, flow.gtw2_ip);
+		boost::hash_combine(seed, flow.gtw2_rvalue);
 
-        boost::hash_combine(seed, flow.gtw3_ip);
-        boost::hash_combine(seed, flow.gtw3_rvalue);
+		boost::hash_combine(seed, flow.gtw3_ip);
+		boost::hash_combine(seed, flow.gtw3_rvalue);
 
-        boost::hash_combine(seed, flow.gtw4_ip);
-        boost::hash_combine(seed, flow.gtw4_rvalue);
+		boost::hash_combine(seed, flow.gtw4_ip);
+		boost::hash_combine(seed, flow.gtw4_rvalue);
 
-        boost::hash_combine(seed, flow.gtw5_ip);
-        boost::hash_combine(seed, flow.gtw5_rvalue);
+		boost::hash_combine(seed, flow.gtw5_ip);
+		boost::hash_combine(seed, flow.gtw5_rvalue);
 
-        return seed;
+		return seed;
 	}
 };
 

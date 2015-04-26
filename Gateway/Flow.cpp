@@ -1,5 +1,8 @@
 #include "Flow.hpp"
 
+Flow::Flow(){
+
+}
 
 Flow::Flow(std::vector<uint8_t> new_flow){
 	memcpy(&src_ip, &new_flow[0], 4);
@@ -33,33 +36,33 @@ Flow::Flow(std::vector<uint8_t> new_flow){
 }
 
 Flow::Flow(const Flow& old_flow){
-		src_ip = old_flow.src_ip;
-		pointer = old_flow.pointer;
+	src_ip = old_flow.src_ip;
+	pointer = old_flow.pointer;
 
-		gtw0_ip = old_flow.gtw0_ip;
-		gtw0_rvalue = old_flow.gtw0_rvalue;
+	gtw0_ip = old_flow.gtw0_ip;
+	gtw0_rvalue = old_flow.gtw0_rvalue;
 
-		gtw1_ip = old_flow.gtw1_ip;
-		gtw1_rvalue = old_flow.gtw1_rvalue;
+	gtw1_ip = old_flow.gtw1_ip;
+	gtw1_rvalue = old_flow.gtw1_rvalue;
 
-		gtw2_ip = old_flow.gtw2_ip;
-		gtw2_rvalue = old_flow.gtw2_rvalue;
+	gtw2_ip = old_flow.gtw2_ip;
+	gtw2_rvalue = old_flow.gtw2_rvalue;
 
-		gtw3_ip = old_flow.gtw3_ip;
-		gtw3_rvalue = old_flow.gtw3_rvalue;
+	gtw3_ip = old_flow.gtw3_ip;
+	gtw3_rvalue = old_flow.gtw3_rvalue;
 
-		gtw4_ip = old_flow.gtw4_ip;
-		gtw4_rvalue = old_flow.gtw4_rvalue;
+	gtw4_ip = old_flow.gtw4_ip;
+	gtw4_rvalue = old_flow.gtw4_rvalue;
 
-		gtw5_ip = old_flow.gtw5_ip;
-		gtw5_rvalue = old_flow.gtw5_rvalue;
+	gtw5_ip = old_flow.gtw5_ip;
+	gtw5_rvalue = old_flow.gtw5_rvalue;
 
-		dst_ip = old_flow.dst_ip;
+	dst_ip = old_flow.dst_ip;
 }
 
 std::vector<uint8_t> Flow::to_byte_vector(){
 	std::vector<uint8_t> flow_out(81);
-	
+
 	memcpy(&flow_out[0], &src_ip, 4);
 	memcpy(&flow_out[4], &pointer, 1);
 
@@ -132,7 +135,7 @@ void Flow::set_gtw_ip_at(uint8_t pointer, uint32_t new_value){
 }
 
 uint64_t Flow::get_gtw_rvalue_at(uint8_t pointer){
-		switch(pointer){
+	switch(pointer){
 		case 0:
 			return gtw0_rvalue;
 		case 1:
@@ -151,7 +154,7 @@ uint64_t Flow::get_gtw_rvalue_at(uint8_t pointer){
 }
 
 void Flow::set_gtw_rvalue_at(uint8_t pointer, uint64_t new_value){
-		switch(pointer){
+	switch(pointer){
 		case 0:
 			gtw0_rvalue = new_value;
 			break;
@@ -177,7 +180,7 @@ void Flow::set_gtw_rvalue_at(uint8_t pointer, uint64_t new_value){
 
 bool Flow::operator==(const Flow &other) const
 { 
-		return src_ip == other.src_ip &&
+	return src_ip == other.src_ip &&
 		pointer == other.pointer &&
 
 		gtw0_ip == other.gtw0_ip &&

@@ -41,7 +41,7 @@ void Filter_Table::add_long_filter(Flow flow){
 
 int Filter_Table::attempt_count(Flow flow){
 	int attempt_count = 0;
-	
+
 	table_mutex.lock();
 	if(filters.count(flow.dst_ip) == 1){
 		attempt_count = filters[flow.dst_ip].attempt_count(flow);
