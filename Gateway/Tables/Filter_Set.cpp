@@ -1,55 +1,44 @@
 #include "Filter_Set.hpp"
 #include "../logger.hpp"
 
-Flow::Flow(std::vector<uint8_t> new_flow){
-	flow = new_flow;
-}
-
 Filter_Set::Filter_Set(boost::mutex* mutex_, boost::asio::io_service* table_io_){
 	table_mutex = mutex_;
 	table_io = table_io_;
 }
 
 Filter_Set::Filter_Set(){
-	
+
 }
 
-void Filter_Set::add_temp_filter(std::vector<uint8_t> flow){
+void Filter_Set::add_temp_filter(Flow flow){
 	add_filter(flow, TEMP_TIME);
 }
 
-void Filter_Set::add_long_filter(std::vector<uint8_t> flow){
+void Filter_Set::add_long_filter(Flow flow){
 	add_filter(flow, LONG_TIME);
 }
 
-void Filter_Set::add_filter(std::vector<uint8_t> flow, int secs){
+void Filter_Set::add_filter(Flow flow, int secs){
 
 	log(logDEBUG2) << "In filterset add filter " << secs;
 	//determine the type of filter
-	//pull out the source
-	uint32_t src_ip;
-	memcpy(&src_ip, &flow[0], 4);
 
 	//if the filter is a * filter
-	if(src_ip == 0){
+	if(flow.src_ip == 0){
 
-
-		//pullout the last gateway IP
-		uint32_t gtw_ip;
-		memcpy(&gtw_ip, &flow[5], 4);
-		log(logINFO) << "Creating * filter for " << gtw_ip;
+		log(logINFO) << "Creating * filter for " << flow.gtw0_ip;
 
 		//check if there is already a filter made
-		if(gateway_filters.count(gtw_ip) == 0){
-			gateway_filters[gtw_ip] = 0;
+		if(gateway_filters.count(flow.gtw0_ip) == 0){
+			gateway_filters[flow.gtw0_ip] = 0;
 		}
 
 		//increment the filter requests value
-		gateway_filters[gtw_ip]++;
+		gateway_filters[flow.gtw0_ip]++;
 
 		//add callback
 		boost::shared_ptr<boost::asio::deadline_timer> timer(new boost::asio::deadline_timer(*table_io, boost::posix_time::seconds(secs)));
-		timer->async_wait(boost::bind(&Filter_Set::decrement_gateway_filter, this, boost::asio::placeholders::error, timer, secs, gtw_ip));
+		timer->async_wait(boost::bind(&Filter_Set::decrement_gateway_filter, this, boost::asio::placeholders::error, timer, secs, flow.gtw0_ip));
 
 
 	}
@@ -65,7 +54,7 @@ void Filter_Set::add_filter(std::vector<uint8_t> flow, int secs){
 		//increment requests for this filter
 		flow_filters[*c_flow]++;
 
-		log(logINFO) << "Filter made for " << src_ip << ". count at " << flow_filters[*c_flow];
+		log(logINFO) << "Filter made for " << flow.src_ip << ". count at " << flow_filters[*c_flow];
 
 		//add callback
 		boost::shared_ptr<boost::asio::deadline_timer> timer(new boost::asio::deadline_timer(*table_io, boost::posix_time::seconds(secs)));
@@ -74,29 +63,21 @@ void Filter_Set::add_filter(std::vector<uint8_t> flow, int secs){
 	}
 }
 
-bool Filter_Set::is_flow_filtered(std::vector<uint8_t> flow){
+bool Filter_Set::is_flow_filtered(Flow flow){
 	log(logDEBUG2) << "in filterset is flow filtered";
 	bool is_filtered = false;
 	//determine the type of filter
-	//pull out the source
-	uint32_t src_ip;
-	memcpy(&src_ip, &flow[0], 4);
 
 	//if the filter is a * filter
-	if(src_ip == 0){
-
-		//pullout the last gateway IP
-		uint32_t gtw_ip;
-		memcpy(&gtw_ip, &flow[5], 4);
-
-		is_filtered = (gateway_filters.count(gtw_ip) == 1);
+	if(flow.src_ip == 0){
+		is_filtered = (gateway_filters.count(flow.gtw0_ip) == 1);
 	}
 	else{
 		log(logDEBUG2) << "creating flow";
 		Flow* c_flow = new Flow(flow);
 		log(logDEBUG2) << "checking table";
 		flow_filters.count(*c_flow);
-		//is_filtered = (flow_filters.count(*c_flow) == 1);
+		is_filtered = (flow_filters.count(*c_flow) == 1);
 		log(logDEBUG2) << "deleting flow";
 		delete(c_flow);
 	}

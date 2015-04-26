@@ -73,7 +73,7 @@ int main(int argc, char* argv[]){
 	delete(aitf_hosts_table);
 	delete(filter_table);
 	delete(shadow_table);
-	
+
 	delete(gateway_key);
 
 }

@@ -20,12 +20,12 @@
 #include <libnetfilter_queue/libnetfilter_queue.h>
 
 class VictimManager {
-public:
-	VictimManager(nfq_handle * a_nfq_handle);
+	public:
+		VictimManager(nfq_handle * a_nfq_handle);
 
-private:
-	~VictimManager();
-	nfq_q_handle * victim_queue_handle;
+	private:
+		~VictimManager();
+		nfq_q_handle * victim_queue_handle;
 
 };
 

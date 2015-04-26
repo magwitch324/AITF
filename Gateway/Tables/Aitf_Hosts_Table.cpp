@@ -17,6 +17,7 @@ Aitf_Hosts_Table::Aitf_Hosts_Table(){
 
 Aitf_Hosts_Table::~Aitf_Hosts_Table(){
 	delete(hosts[99]);
+	delete(hosts[2]);
 }
 
 bool Aitf_Hosts_Table::check_from_rate(uint32_t ip){
