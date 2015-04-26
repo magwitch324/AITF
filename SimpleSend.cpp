@@ -12,7 +12,7 @@ using boost::asio::ip::udp;
 std::vector<uint8_t> filter_request(){
 	uint8_t msg_type = 0;
 	uint32_t src_ip = 99;
-	uint8_t ptr = 0;
+	uint8_t ptr = 1;
 
 	uint32_t gtw1_ip = 20;
 	uint64_t gtw1_rval = 120;

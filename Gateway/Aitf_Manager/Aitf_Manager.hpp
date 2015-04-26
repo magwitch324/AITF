@@ -21,6 +21,7 @@ class Aitf_Manager : public Packet_Listener
 		void unresponsive_host(const boost::system::error_code& e, boost::shared_ptr<boost::asio::deadline_timer> timer, Flow flow);
 		void unresponsive_gateway(const boost::system::error_code& e, boost::shared_ptr<boost::asio::deadline_timer> timer, Flow flow, uint8_t escalation, int attempts);
 		std::vector<uint8_t> create_handshake(Flow flow);
+		void attempt_escalation(Flow flow, int attempts);
 		boost::thread aitf_thread;
 		boost::thread timeout_thread;
 		boost::asio::io_service timeout_io;

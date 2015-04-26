@@ -63,26 +63,23 @@ void Filter_Set::add_filter(Flow flow, int secs){
 	}
 }
 
-bool Filter_Set::is_flow_filtered(Flow flow){
+int Filter_Set::attempt_count(Flow flow){
 	log(logDEBUG2) << "in filterset is flow filtered";
-	bool is_filtered = false;
+	int attempt_count = 0;
 	//determine the type of filter
 
-	//if the filter is a * filter
-	if(flow.src_ip == 0){
-		is_filtered = (gateway_filters.count(flow.gtw0_ip) == 1);
+	//if the filter is a * filter and the filter exits
+	if(flow.src_ip == 0 && gateway_filters.count(flow.gtw0_ip) == 1){
+		attempt_count = gateway_filters[flow.gtw0_ip];
 	}
 	else{
-		log(logDEBUG2) << "creating flow";
-		Flow* c_flow = new Flow(flow);
 		log(logDEBUG2) << "checking table";
-		flow_filters.count(*c_flow);
-		is_filtered = (flow_filters.count(*c_flow) == 1);
-		log(logDEBUG2) << "deleting flow";
-		delete(c_flow);
+		if(flow_filters.count(flow) == 1){
+			attempt_count = flow_filters[flow];
+		}
 	}
 
-	return is_filtered;
+	return attempt_count;
 
 }
 

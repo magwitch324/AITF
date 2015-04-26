@@ -169,7 +169,7 @@ void Aitf_Manager::handle_filter_request(std::vector<uint8_t> message){
 
 			log(logDEBUG2) << "checking shadow table";
 			//check shadow table
-			bool repeat_request = shadow_table->is_flow_filtered(flow);
+			int request_attempts = shadow_table->attempt_count(flow);
 
 			//if there is only one gateway in the list, then this gateway
 			//must deal with it
@@ -179,7 +179,7 @@ void Aitf_Manager::handle_filter_request(std::vector<uint8_t> message){
 				//if the host is AITF enabled
 				if(aitf_hosts_table->contains_host(flow.src_ip)){
 					//if this is a repeat offense
-					if(repeat_request){
+					if(request_attempts  > 0){
 						filter_table->add_long_filter(flow);
 					}
 					else{
@@ -199,10 +199,10 @@ void Aitf_Manager::handle_filter_request(std::vector<uint8_t> message){
 				}
 			}
 			else{
-
+				log(logDEBUG2) << "Dealing with another gateway";
 				//if this is a repeat offense for the gateway (twice)
-				if(repeat_request){
-
+				if(request_attempts > 2){
+					attempt_escalation(flow, request_attempts - 1);
 				}
 				else{
 					Flow ammended_flow(flow);
@@ -236,9 +236,6 @@ void Aitf_Manager::handle_filter_request(std::vector<uint8_t> message){
 					timer->async_wait(boost::bind(&Aitf_Manager::unresponsive_gateway, this, boost::asio::placeholders::error, timer, flow, escalation, 0));
 
 				}
-				//insert gateway filter for response
-
-				//send handshake
 			}//else flow pointer != 0
 		}//if rate ok
 	}//if size ok
@@ -248,6 +245,7 @@ void Aitf_Manager::handle_filter_request(std::vector<uint8_t> message){
 }
 
 std::vector<uint8_t> Aitf_Manager::create_handshake(Flow flow){
+	log(logDEBUG2) << "Creating handshake";
 	//generate the nonce
 	uint64_t nonce = Hasher::hash(*gateway_key, (unsigned char*) &flow.to_byte_vector()[0], 81);
 	//construct the handshake request wiht the flow
@@ -257,33 +255,29 @@ std::vector<uint8_t> Aitf_Manager::create_handshake(Flow flow){
 	memcpy(&handshake[1], &MY_IP, 4);
 	memcpy(&handshake[5], &flow.to_byte_vector()[0], 81);
 	memcpy(&handshake[86], &nonce, 8);
+	log(logDEBUG2) << "Finished creating handshake";
+	
+	return handshake;
 }
+
 void Aitf_Manager::unresponsive_host(const boost::system::error_code& e, boost::shared_ptr<boost::asio::deadline_timer> timer, Flow flow){
-	log(logDEBUG2) << "In unresponsive_host callback";
+	log(logDEBUG2) << "_________________In unresponsive_host callback_________________";
 
 	//if the flow has not been added to the table then cut off the client
-	if(!shadow_table->is_flow_filtered(flow)){
+	if(shadow_table->attempt_count(flow) == 0){
 		filter_table->add_long_filter(flow);
 	}
 
 }
 
 void Aitf_Manager::unresponsive_gateway(const boost::system::error_code& e, boost::shared_ptr<boost::asio::deadline_timer> timer, Flow flow, uint8_t escalation, int attempts){
-	log(logDEBUG2) << "In unresponsive_host callback";
+	log(logDEBUG2) << "_________________In unresponsive_gateway callback_________________";
 
 	//if the flow has not been added to the table then check for escalation
-	if(!shadow_table->is_flow_filtered(flow)){
+	if(shadow_table->attempt_count(flow) == 0){
 		if(escalation == 1){
 			//if there is escalation attempt to escalate to the next gateway
-			
-			//if there is an available gateway in the flow
-			if(attempts < flow.pointer){
-
-			}
-			else{
-				//no other option but to block locally
-				filter_table->add_long_filter(flow);
-			}
+			attempt_escalation(flow, attempts);
 
 		}
 		else{
@@ -291,5 +285,32 @@ void Aitf_Manager::unresponsive_gateway(const boost::system::error_code& e, boos
 			filter_table->add_long_filter(flow);
 		}
 	}
+	else{
+		//increment the shadowtable filter count to show the number of attempts made
+		for(int i = 0; i < attempts; i++){
+			shadow_table->add_long_filter(flow);
+		}
+	}
 
+}
+
+void Aitf_Manager::attempt_escalation(Flow flow, int attempts){
+	//if there is an available gateway in the flow
+	if(attempts < flow.pointer){
+		std::vector<uint8_t> handshake = create_handshake(flow);
+		uint32_t dst_gtw_ip = flow.get_gtw_ip_at(attempts);
+		
+		//add filter for response				
+		Flow handshake_flow(flow);
+		handshake_flow.src_ip = dst_gtw_ip;
+		filter_table->add_temp_filter(handshake_flow);
+		//TODO SEND HANDSHAKE
+		//add callback for timedout connections
+		boost::shared_ptr<boost::asio::deadline_timer> timer(new boost::asio::deadline_timer(timeout_io, boost::posix_time::seconds(TEMP_TIME)));
+		timer->async_wait(boost::bind(&Aitf_Manager::unresponsive_gateway, this, boost::asio::placeholders::error, timer, flow, 1, attempts+1));
+	}
+	else{
+		//no other option but to block locally
+		filter_table->add_long_filter(flow);
+	}
 }

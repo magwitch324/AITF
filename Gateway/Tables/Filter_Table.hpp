@@ -8,13 +8,9 @@
 class Filter_Table : public Timed_Table{
 
 	public:
-		//~Filter_Table();
-		/*void add_temp_filter(uint8_t flow[]);
-		  void add_long_filter(uint8_t flow[]);
-		  bool is_flow_filtered(uint8_t flow[]);*/
 		void add_temp_filter(Flow flow);
 		void add_long_filter(Flow flow);
-		bool is_flow_filtered(Flow flow);
+		int attempt_count(Flow flow);
 
 	private:
 		std::unordered_map<uint32_t, Filter_Set> filters;

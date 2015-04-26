@@ -39,15 +39,15 @@ void Filter_Table::add_long_filter(Flow flow){
 	table_mutex.unlock();
 }
 
-bool Filter_Table::is_flow_filtered(Flow flow){
-	bool is_filtered = false;
+int Filter_Table::attempt_count(Flow flow){
+	int attempt_count = 0;
 	
 	table_mutex.lock();
 	if(filters.count(flow.dst_ip) == 1){
-		is_filtered = filters[flow.dst_ip].is_flow_filtered(flow);
+		attempt_count = filters[flow.dst_ip].attempt_count(flow);
 	}
 	table_mutex.unlock();
 
-	return is_filtered;
+	return attempt_count;
 }
 

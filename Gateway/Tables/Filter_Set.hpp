@@ -21,7 +21,7 @@ class Filter_Set{
 		Filter_Set(boost::mutex* mutex_, boost::asio::io_service* table_io_);
 		void add_temp_filter(Flow flow);
 		void add_long_filter(Flow flow);
-		bool is_flow_filtered(Flow flow);
+		int attempt_count(Flow flow);
 
 	private:
 		void add_filter(Flow, int secs);
