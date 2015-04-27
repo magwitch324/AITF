@@ -223,20 +223,13 @@ void Aitf_Manager::handle_filter_request(std::vector<uint8_t> message){
 					attempt_escalation(flow, request_attempts - 1);
 				}
 				else{
-					Flow ammended_flow(flow);
-
-					//remove all of the gateways after the attack gateway
-					//and reset the pointer to 0
-					ammended_flow.gtw1_ip = 0;
-					ammended_flow.gtw1_rvalue = 0;
-					ammended_flow.gtw2_ip = 0;
-					ammended_flow.gtw2_rvalue = 0;
-					ammended_flow.gtw3_ip = 0;
-					ammended_flow.gtw3_rvalue = 0;
-					ammended_flow.gtw4_ip = 0;
-					ammended_flow.gtw4_rvalue = 0;
-					ammended_flow.gtw5_ip = 0;
-					ammended_flow.gtw5_rvalue = 0;
+					
+					//create a new flow with only the atk gtw
+					Flow ammended_flow();
+					ammended_flow.src_ip = flow.src_ip;
+					ammended_flow.gtw0_ip = flow.gtw0_ip;
+					ammended_flow.gtw0_rvalue = flow.gtw0_rvalue;
+					ammended_flow.dst_ip = flow.dst_ip;
 					ammended_flow.pointer = 0;
 
 					std::vector<uint8_t> handshake = create_handshake(ammended_flow);
@@ -342,6 +335,8 @@ void Aitf_Manager::attempt_escalation(Flow flow, int attempts){
 	//if there is an available gateway in the flow
 	if(attempts < flow.pointer){
 		std::vector<uint8_t> handshake = create_handshake(flow);
+
+		//TODO: remove extra gateways
 		uint32_t dst_gtw_ip = flow.get_gtw_ip_at(attempts);
 
 		//add filter for response				
