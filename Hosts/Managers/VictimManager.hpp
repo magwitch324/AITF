@@ -8,8 +8,6 @@
 #ifndef VICTIMMANAGER_HPP_
 #define VICTIMMANAGER_HPP_
 
-#include <stdlib.h>
-
 #include <libmnl/libmnl.h>
 #include <netinet/in.h>
 #include <linux/netfilter.h>
@@ -20,13 +18,20 @@
 
 #include <libnetfilter_queue/libnetfilter_queue.h>
 
+#include <boost/atomic.hpp>
+#include <boost/thread.hpp>
+
 class VictimManager {
 	public:
-		VictimManager(nfq_handle * a_nfq_handle);
+		VictimManager(struct nfq_handle * a_nfq_handle, int victim_queue_num);
 		~VictimManager();
 
 	private:
+		enum {STARTING, STARTED, ENDING, ENDED};
+		mutable boost::atomic<int> state;
+		boost::thread * packet_thread;
 		nfq_q_handle * victim_queue_handle;
+		void packetThreadFunc(struct nfq_handle * a_nfq_handle);
 
 };
 

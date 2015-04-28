@@ -21,7 +21,7 @@
 
 class AttackManager {
 	public:
-		AttackManager(struct nfq_handle * a_nfq_handle);
+		AttackManager(struct nfq_handle * a_nfq_handle, int attack_queue_num);
 		~AttackManager();
 
 	private:
@@ -30,7 +30,7 @@ class AttackManager {
 		boost::thread * packet_thread;
 		nfq_q_handle * attack_queue_handle;
 		void packetThreadFunc(struct nfq_handle * a_nfq_handle);
-		//int attack_callback(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg, struct nfq_data *nfad, void *data);
+
 };
 
 #endif /* ATTACKMANAGER_HPP_ */
