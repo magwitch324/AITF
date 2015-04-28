@@ -22,7 +22,7 @@ class Aitf_Manager : public Packet_Listener
 		void handle_filter_reply(std::vector<uint8_t> message);
 		void unresponsive_host(const boost::system::error_code& e, boost::shared_ptr<boost::asio::deadline_timer> timer, Flow flow);
 		void unresponsive_gateway(const boost::system::error_code& e, boost::shared_ptr<boost::asio::deadline_timer> timer, Flow flow, uint8_t escalation, int attempts);
-		std::vector<uint8_t> create_handshake(Flow flow);
+		std::vector<uint8_t> create_handshake(Flow flow, int attempts);
 		void attempt_escalation(Flow flow, int attempts);
 		void deal_with_attacker(Flow flow, int request_attempts);
 		boost::thread aitf_thread;

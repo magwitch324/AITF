@@ -13,6 +13,8 @@ void Timed_Table::stop_thread(){
 	log(logINFO) << "stopping table thread";
 	table_work.reset();
 	log(logDEBUG) << "work reset";
+	table_io.stop();
+	log(logDEBUG) << "table io stopped";
 	table_thread.join();
 	log(logINFO) << "table thread stopped";
 }

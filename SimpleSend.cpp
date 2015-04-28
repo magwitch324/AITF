@@ -98,7 +98,7 @@ std::vector<uint8_t> handshake_request(){
 int main(int argc, char* argv[]){
 	boost::asio::io_service io_service;
 	udp::resolver resolver(io_service);
-	udp::resolver::query query(udp::v4(),"127.0.0.1","13");
+	udp::resolver::query query(udp::v4(),"127.0.0.1","50000");
 	udp::endpoint receiver_endpoint = *resolver.resolve(query);
 
 	udp::socket socket(io_service);

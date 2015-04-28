@@ -51,3 +51,30 @@ int Filter_Table::attempt_count(Flow flow){
 	return attempt_count;
 }
 
+void Filter_Table::add_gtw_rvalue(uint32_t dst_ip, uint32_t gtw_ip, uint64_t rvalue){
+
+	table_mutex.lock();
+
+	//if there are no existing filters for the destination
+	//create a filter set for it
+	if(filters.count(dst_ip) == 0){
+		Filter_Set tmp(&table_mutex, &table_io);
+		filters[dst_ip] = tmp;
+	}
+	filters[dst_ip].add_gtw_rvalue(gtw_ip, rvalue);
+	table_mutex.unlock();
+}
+
+bool Filter_Table::flow_is_filtered(Flow flow){
+	bool is_filtered = false;
+	
+	table_mutex.lock();
+	if(filters.count(flow.dst_ip > 0)){
+		is_filtered = filters[flow.dst_ip].flow_is_filtered(flow);
+	}
+
+	table_mutex.unlock();
+
+	return is_filtered;
+}
+

@@ -111,15 +111,21 @@ void Aitf_Manager::handle_filter_reply(std::vector<uint8_t> message){
 void Aitf_Manager::handle_handshake_finish(std::vector<uint8_t> message){
 	log(logDEBUG2) << "Received handshake finish";
 
-	if(message.size() == 90){
-		Flow flow(std::vector<uint8_t>(&message[1], &message[1] + 81));
+	if(message.size() == 91){
+		Flow flow(std::vector<uint8_t>(&message[2], &message[2] + 81));
 		//check that the nonce is correct
 		uint64_t nonce;
-		memcpy(&nonce, &message[82], 8);
+		memcpy(&nonce, &message[83], 8);
 		uint64_t actual = Hasher::hash(*gateway_key, &flow.to_byte_vector()[0], 81);
 
 		//if the nonce is correct then deal with the attacker
 		if(nonce == actual){
+			//remove downstream gateways before adding filter
+			for(int i = message[1]; i < 6; i++){
+				flow.set_gtw_ip_at(i, 0);
+				flow.set_gtw_rvalue_at(i, 0);
+			}
+
 			filter_table->add_temp_filter(flow);
 
 			log(logDEBUG2) << "checking shadow table";
@@ -135,7 +141,7 @@ void Aitf_Manager::handle_handshake_request(std::vector<uint8_t> message){
 	log(logDEBUG2) << "Received handshake request";
 
 	//check the message length
-	if(message.size() == 94){
+	if(message.size() == 95){
 
 
 		//pullout the requester gateway IP
@@ -145,11 +151,13 @@ void Aitf_Manager::handle_handshake_request(std::vector<uint8_t> message){
 		//if the gateway is within its rate limit
 		if(aitf_hosts_table->check_from_rate(gtw_ip)){
 
-			Flow flow(std::vector<uint8_t>(&message[5], &message[5]+81));
+			//create the flow
+			Flow flow(std::vector<uint8_t>(&message[6], &message[6]+81));
 
+			uint8_t this_gtw_ptr = message[1];
 
-			uint64_t r_value = flow.get_gtw_rvalue_at(flow.pointer);
-			uint32_t atk_gtw_ip = flow.get_gtw_ip_at(flow.pointer);
+			uint64_t r_value = flow.get_gtw_rvalue_at(this_gtw_ptr);
+			uint32_t atk_gtw_ip = flow.get_gtw_ip_at(this_gtw_ptr);
 
 			log(logDEBUG) << "dst: " << flow.dst_ip << " atk_gtw_ip: " << atk_gtw_ip << " r_value: " << r_value;
 
@@ -160,25 +168,26 @@ void Aitf_Manager::handle_handshake_request(std::vector<uint8_t> message){
 
 
 			//construct the reply
-			std::vector<uint8_t> reply(90);
+			std::vector<uint8_t> reply(91);
 			reply[0] = 2;
+			reply[1] = message[5];
 			if(r_value == actual){
 				//construct the reply with a new nonce
 				log(logDEBUG) << "CORRECT HASH";
 				uint64_t nonce = Hasher::hash(*gateway_key, (unsigned char*) &flow.to_byte_vector()[0], 81);
-				memcpy(&reply[1], &flow.to_byte_vector()[0], 81);
-				memcpy(&reply[82], &nonce, 8);
+				memcpy(&reply[2], &flow.to_byte_vector()[0], 81);
+				memcpy(&reply[83], &nonce, 8);
 			}
 			else{
 				//send back the reply with a correct r_value and same nonce
 				log(logDEBUG) << "INCORRECT HASH";
 				Flow modified_flow(flow);
-				modified_flow.set_gtw_rvalue_at(modified_flow.pointer, actual);
+				modified_flow.set_gtw_rvalue_at(this_gtw_ptr, actual);
 
 				//copy in the flow to to reply
-				memcpy(&reply[1], &modified_flow.to_byte_vector()[0], 81);
+				memcpy(&reply[2], &modified_flow.to_byte_vector()[0], 81);
 				//copy in the nonce from the original message
-				memcpy(&reply[82], &message[86], 8);
+				memcpy(&reply[83], &message[87], 8);
 			}
 
 			//TODO: send the reply to the destination
@@ -225,14 +234,14 @@ void Aitf_Manager::handle_filter_request(std::vector<uint8_t> message){
 				else{
 					
 					//create a new flow with only the atk gtw
-					Flow ammended_flow();
+					Flow ammended_flow;
 					ammended_flow.src_ip = flow.src_ip;
 					ammended_flow.gtw0_ip = flow.gtw0_ip;
 					ammended_flow.gtw0_rvalue = flow.gtw0_rvalue;
 					ammended_flow.dst_ip = flow.dst_ip;
 					ammended_flow.pointer = 0;
 
-					std::vector<uint8_t> handshake = create_handshake(ammended_flow);
+					std::vector<uint8_t> handshake = create_handshake(ammended_flow, 0);
 
 					//Add filter for returning handshake with src as gtw0_ip
 					Flow handshake_flow(flow);
@@ -281,17 +290,18 @@ void Aitf_Manager::deal_with_attacker(Flow flow, int request_attempts){
 	}
 }
 
-std::vector<uint8_t> Aitf_Manager::create_handshake(Flow flow){
+std::vector<uint8_t> Aitf_Manager::create_handshake(Flow flow, int attempts){
 	log(logDEBUG2) << "Creating handshake";
 	//generate the nonce
 	uint64_t nonce = Hasher::hash(*gateway_key, (unsigned char*) &flow.to_byte_vector()[0], 81);
 	//construct the handshake request wiht the flow
 	//and prepend the source IP and msg_type and the nonce at the end
-	std::vector<uint8_t> handshake(94);
+	std::vector<uint8_t> handshake(95);
 	handshake[0] = 1;
 	memcpy(&handshake[1], &MY_IP, 4);
-	memcpy(&handshake[5], &flow.to_byte_vector()[0], 81);
-	memcpy(&handshake[86], &nonce, 8);
+	handshake[5] = (uint8_t) attempts;
+	memcpy(&handshake[6], &flow.to_byte_vector()[0], 81);
+	memcpy(&handshake[87], &nonce, 8);
 	log(logDEBUG2) << "Finished creating handshake";
 
 	return handshake;
@@ -334,15 +344,16 @@ void Aitf_Manager::unresponsive_gateway(const boost::system::error_code& e, boos
 void Aitf_Manager::attempt_escalation(Flow flow, int attempts){
 	//if there is an available gateway in the flow
 	if(attempts < flow.pointer){
-		std::vector<uint8_t> handshake = create_handshake(flow);
 
-		//TODO: remove extra gateways
+		//construct the handshake
+		std::vector<uint8_t> handshake = create_handshake(flow, attempts);
+
+		//add filter for response
 		uint32_t dst_gtw_ip = flow.get_gtw_ip_at(attempts);
-
-		//add filter for response				
 		Flow handshake_flow(flow);
 		handshake_flow.src_ip = dst_gtw_ip;
 		filter_table->add_temp_filter(handshake_flow);
+
 		//TODO SEND HANDSHAKE
 		//add callback for timedout connections
 		boost::shared_ptr<boost::asio::deadline_timer> timer(new boost::asio::deadline_timer(timeout_io, boost::posix_time::seconds(TEMP_TIME)));

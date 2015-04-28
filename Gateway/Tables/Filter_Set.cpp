@@ -44,7 +44,8 @@ void Filter_Set::add_filter(Flow flow, int secs){
 	}
 	else{
 		//add to the flow_filters
-		Flow* c_flow = new Flow(flow);
+		//Flow* c_flow = new Flow(flow);
+		boost::shared_ptr<Flow> c_flow(new Flow(flow));
 
 		//check if there is already a filter in place
 		if(flow_filters.count(*c_flow) == 0){
@@ -61,6 +62,10 @@ void Filter_Set::add_filter(Flow flow, int secs){
 		timer->async_wait(boost::bind(&Filter_Set::decrement_flow_filter, this, boost::asio::placeholders::error, timer, secs, c_flow));
 
 	}
+}
+
+void Filter_Set::add_gtw_rvalue(uint32_t gtw_ip, uint64_t rvalue){
+	rvalue_filters[gtw_ip] = rvalue;
 }
 
 int Filter_Set::attempt_count(Flow flow){
@@ -83,8 +88,43 @@ int Filter_Set::attempt_count(Flow flow){
 
 }
 
+bool Filter_Set::flow_is_filtered(Flow flow){
+	bool is_filtered = false;
+	//determine the type of flow
+	//if it is a * flow
+	if(flow.src_ip == 0){
+		is_filtered = (gateway_filters.count(flow.gtw0_ip) == 1);
+	}
+	else{
+		is_filtered = (flow_filters.count(flow) == 1);
+	}
 
-void Filter_Set::decrement_flow_filter(const boost::system::error_code& e, boost::shared_ptr<boost::asio::deadline_timer> timer, int secs, Flow* flow){
+	//if there is no regular filter for it check the rvals
+	if(!is_filtered){
+		//now check for valid rvalues
+		for(int i = 0; i < 6; i++){
+			//pull out the ip and rvalue
+			uint32_t ip = flow.get_gtw_ip_at(i);
+			uint64_t rvalue = flow.get_gtw_rvalue_at(i);
+			
+			//if there is a recorded rvalue for this gateway
+			if(rvalue_filters.count(ip) == 1){
+				//check the rvalue
+				if(rvalue != rvalue_filters[ip]){
+					is_filtered = true;
+					break;
+				}
+			}
+		}//for
+	}//if(!isfiltered)
+
+	return is_filtered;
+
+
+}
+
+
+void Filter_Set::decrement_flow_filter(const boost::system::error_code& e, boost::shared_ptr<boost::asio::deadline_timer> timer, int secs, boost::shared_ptr<Flow> flow){
 	//reset the timer
 	timer.reset();
 
@@ -107,7 +147,6 @@ void Filter_Set::decrement_flow_filter(const boost::system::error_code& e, boost
 	else{
 		log(logERROR) << "Flow does not exits!!!!!";
 	}
-	delete(flow);
 	table_mutex->unlock();
 }
 

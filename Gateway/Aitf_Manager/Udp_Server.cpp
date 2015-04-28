@@ -15,7 +15,7 @@ void Udp_Server::start(){
 	log(logINFO) << "Starting udp server";
 
 	//create the socket
-	udp::socket test(udp_io, udp::endpoint(udp::v4(), 13));
+	udp::socket test(udp_io, udp::endpoint(udp::v4(), 50000));
 	udp_sock = &test;
 
 	//start async listening
