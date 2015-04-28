@@ -67,7 +67,7 @@ void Filter_Table::add_gtw_rvalue(uint32_t dst_ip, uint32_t gtw_ip, uint64_t rva
 
 bool Filter_Table::flow_is_filtered(Flow flow){
 	bool is_filtered = false;
-	
+
 	table_mutex.lock();
 	if(filters.count(flow.dst_ip > 0)){
 		is_filtered = filters[flow.dst_ip].flow_is_filtered(flow);

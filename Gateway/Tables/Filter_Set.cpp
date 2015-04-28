@@ -106,7 +106,7 @@ bool Filter_Set::flow_is_filtered(Flow flow){
 			//pull out the ip and rvalue
 			uint32_t ip = flow.get_gtw_ip_at(i);
 			uint64_t rvalue = flow.get_gtw_rvalue_at(i);
-			
+
 			//if there is a recorded rvalue for this gateway
 			if(rvalue_filters.count(ip) == 1){
 				//check the rvalue

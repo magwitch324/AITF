@@ -1,8 +1,41 @@
 #include <boost/thread.hpp>
 #include <boost/date_time.hpp>
-#include "../logger.hpp"
+#include <string>
 #include "Internet_Manager.hpp"
 #include "../Hasher.hpp"
+#include "../logger.hpp"
+
+Internet_Manager::Internet_Manager(){
+	std::string command = "iptables -A OUTPUT -j NFQUEUE --queue-num 1";
+	log(logINFO) << command;
+
+	system( command.c_str() );
+}
+
+Internet_Manager::~Internet_Manager(){
+	std::string command = "iptables -D OUTPUT -j NFQUEUE --queue-num 1";
+	log(logINFO) << command;
+
+	system( command.c_str() );
+}
+
+void Internet_Manager::start_thread(){
+	log(logINFO) << "starting Internet_Manager";
+	internet_thread = boost::thread(&Internet_Manager::run, this);
+	//timeout_thread = boost::thread(&Internet_Manager::timeout_run, this);
+}
+
+void Internet_Manager::stop_thread(){
+	packet_manager->stop();
+	internet_thread.interrupt();
+	internet_thread.join();
+}
+
+void Internet_Manager::run(){
+	packet_manager = new Packet_Manager(this);
+	packet_manager->start();
+}
+
 
 void Internet_Manager::packet_callback(std::vector<uint8_t> packet){
 	//Determine if the packet has an RR header

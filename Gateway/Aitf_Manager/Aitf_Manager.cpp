@@ -232,7 +232,7 @@ void Aitf_Manager::handle_filter_request(std::vector<uint8_t> message){
 					attempt_escalation(flow, request_attempts - 1);
 				}
 				else{
-					
+
 					//create a new flow with only the atk gtw
 					Flow ammended_flow;
 					ammended_flow.src_ip = flow.src_ip;
