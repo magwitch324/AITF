@@ -6,6 +6,7 @@
 #include "logger.hpp"
 
 #include "Managers/PacketManager.hpp"
+#include <string>
 
 loglevel_e loglevel = logERROR;
 
@@ -24,18 +25,34 @@ void set_log_level(int level){
 	}
 }
 
-int main(){
-	llog(logINFO) << "Starting Main";
+int main(int argc, char **argv){
+	int i;
+	char command[200];
+	PacketManager * pms[argc-1];
 
+	llog(logINFO) << "Starting Main";
 	set_log_level(4);
 
+	for ( i = 1; i < argc; i ++ ) {
+		printf ("iptables -A INPUT -s %s -j NFQUEUE --queue-num %u \n", argv[i], i*2+1);
+		sprintf( command, "iptables -A INPUT -d %s -j NFQUEUE --queue-num %u", argv[i], i*2+1 );
+		system( command );
+		sprintf( command, "iptables -A OUTPUT -s %s -j NFQUEUE --queue-num %u", argv[i], i*2+2 );
+		system( command );
+		pms[i-1] = new PacketManager(i*2+1, i*2+2);
+	}
 
-	PacketManager * pm = new PacketManager();
 
 	int x;
 	std::cin >> x;
 
-	delete pm;
+	for ( i = 1; i < argc; i ++ ) {
+		delete pms[i-1];
+		sprintf( command, "iptables -D OUTPUT -s %s -j NFQUEUE --queue-num %u", argv[i], i*2+2 );
+		system( command );
+		sprintf( command, "iptables -D INPUT -d %s -j NFQUEUE --queue-num %u", argv[i], i*2+1 );
+		system( command );
+	}
 
 	llog(logINFO) << "Finishing Main";
 

@@ -22,7 +22,7 @@
 
 class PacketManager {
 	public:
-		PacketManager();
+		PacketManager(int input_queue_num, int output_queue_num);
 		~PacketManager();
 
 	private:
