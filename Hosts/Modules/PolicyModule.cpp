@@ -7,7 +7,7 @@
 
 PolicyModule::PolicyModule(){
 
-	bandwidthUsage = new Async_Auto_Table( "../hostBandwidth.log", 1000);
+	bandwidthUsage = new Async_Auto_Table( "../hostBandwidth.log", 500);
 	//bandwidthUsage = new Async_Auto_Table();
 
 	//filterRequests = new Async_Auto_Table( "../filterRequests.log", 1000);
@@ -143,12 +143,16 @@ PolicyModule::PolicyModule(){
 	defaults[strToIP("10.4.13.255")] = 1000;
 	defaults[strToIP("10.4.13.256")] = 1000;
 
+	bandwidthUsage->start_thread();
+	filterRequests->start_thread();
 }
 
 
 PolicyModule::~PolicyModule() {
-	delete bandwidthUsage();
-	delete filterRequests();
+	bandwidthUsage->stop_thread();
+	filterRequests->stop_thread();
+	delete bandwidthUsage;
+	delete filterRequests;
 }
 /*
  * receivedPacket: determines what should happen based on the source ip and the size of the packet
@@ -179,7 +183,7 @@ int PolicyModule::receivedPacket(uint32_t source_ip, int size){
 	return bwu_ret;
 }
 
-static uint32_t PolicyModule::strToIP(const char * str_ip){
+uint32_t PolicyModule::strToIP(const char * str_ip){
 	uint32_t part1, part2, part3, part4, num_ip;
 	part1 = part2 = part3 = part4 = num_ip = 0;
 	sscanf(str_ip, "%d.%d.%d.%d", &part1, &part2, &part3, &part4);

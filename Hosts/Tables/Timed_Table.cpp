@@ -4,17 +4,17 @@
 
 //Starts the decrement thread for the table
 void Timed_Table::start_thread(){
-	log(logINFO) << "Starting table thread";
+	llog(logINFO) << "Starting table thread";
 	table_thread = boost::thread(&Timed_Table::run, this);
 }
 
 //Stops the iowork and joins the thread
 void Timed_Table::stop_thread(){
-	log(logINFO) << "stopping table thread";
+	llog(logINFO) << "stopping table thread";
 	table_work.reset();
-	log(logDEBUG) << "work reset";
+	llog(logDEBUG) << "work reset";
 	table_thread.join();
-	log(logINFO) << "table thread stopped";
+	llog(logINFO) << "table thread stopped";
 }
 
 //Starts the iowork

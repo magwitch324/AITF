@@ -17,7 +17,7 @@ class PolicyModule {
 		int receivedPacket(uint32_t source_ip, int size);
 	private:
 		std::unordered_map<uint32_t, int> defaults;
-		static uint32_t strToIP(const char * str_ip);
+		uint32_t strToIP(const char * str_ip);
 		Async_Auto_Table * bandwidthUsage;
 		Async_Auto_Table * filterRequests;
 };

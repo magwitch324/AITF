@@ -19,8 +19,8 @@
 
 #include "AttackManager.hpp"
 #include "VictimManager.hpp"
-#include "Modules/FilterModule.hpp"
-#include "Modules/PolicyModule.hpp"
+#include "../Modules/FilterModule.hpp"
+#include "../Modules/PolicyModule.hpp"
 
 class PacketManager {
 	public:

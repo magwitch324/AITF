@@ -26,7 +26,25 @@ VictimManager::~VictimManager(void) {
 
 
 int VictimManager::packetCallbackFunc(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg, struct nfq_data *nfad, void *data) {
+	unsigned char * buffer;
+	uint16_t length = 0;
+	uint32_t source_ip = 0;
+
 	llog(logINFO) << "Victim Received Packet";
+
 	u_int32_t id = getPktID(nfad);
+
+	nfq_get_payload(nfad, &buffer);
+	length = *((uint16_t *) (buffer + 2));
+	source_ip = *((uint32_t *) (buffer + 12));
+
+	int val = policy->receivedPacket(source_ip, length);
+
+	if (val == -1) {
+		//TODO: send filter request
+	} else if (val == -2) {
+		//TODO: send filter request with escelation
+	}
+
 	return nfq_set_verdict(qh, id, NF_ACCEPT, 0, NULL);
 }

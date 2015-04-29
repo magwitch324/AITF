@@ -10,11 +10,13 @@ Async_Auto_Table::Async_Auto_Table() {
 
 Async_Auto_Table::Async_Auto_Table(std::string filename, uint32_t timeout) {
 
-	std::ofstream filehandle;
-	filehandle.open(filename);
+	std::ofstream fh;
+	fh.open(filename, std::ios::out);
+	fh << "\n";
+	fh.close();
 
 	print_timer = new boost::asio::deadline_timer(table_io, boost::posix_time::milliseconds(timeout));
-	print_timer->async_wait(boost::bind(&Async_Auto_Table::printStatus, this, boost::asio::placeholders::error, filehandle, timeout));
+	print_timer->async_wait(boost::bind(&Async_Auto_Table::printStatus, this, boost::asio::placeholders::error, filename, timeout));
 }
 
 Async_Auto_Table::~Async_Auto_Table() {
@@ -68,7 +70,7 @@ int Async_Auto_Table::addValue(uint32_t ip, int value, int max, uint32_t timeout
 
 	if ((max > 0) && (table[ip] > max) && ((table[ip] - value) <= max) )
 		ret = -1;
-
+	//llog(logINFO) << "++" << ip << "Added " << value << " to make " << table[ip];
 	table_mutex.unlock();
 
 	boost::shared_ptr<boost::asio::deadline_timer> timer(new boost::asio::deadline_timer(table_io, boost::posix_time::seconds(1)));
@@ -84,28 +86,34 @@ void Async_Auto_Table::decrement(const boost::system::error_code& e, boost::shar
 
 	table[ip] -= value;
 
+	//llog(logINFO) << "--" << ip << "removed " << value << " to make " << table[ip];
 	if (table[ip] == 0)
 		table.erase(ip);
 
 	table_mutex.unlock();
 }
 
-void Async_Auto_Table::printStatus(const boost::system::error_code& e, std::ofstream filehandle, uint32_t timeout) {
+void Async_Auto_Table::printStatus(const boost::system::error_code& e, std::string filename, uint32_t timeout) {
 
 	if (e == boost::asio::error::operation_aborted) {
-		filehandle.close();
 		return;
 	}
+
+	std::ofstream fh;
+	fh.open(filename, std::ios::out | std::ios::app);
 
 	table_mutex.lock();
 
 	for ( auto iter = table.begin(); iter != table.end(); ++ iter ) {
-		filehandle << "," << iter->first << "," << iter->second;
+		fh << "," << iter->first << "," << iter->second;
+		//llog(logINFO) << "," << iter->first << "," << iter->second;
 	}
-
 	table_mutex.unlock();
 
+	fh << "\n";
+	fh.close();
+
 	print_timer->expires_from_now(boost::posix_time::milliseconds(timeout));
-	print_timer->async_wait(boost::bind(&Async_Auto_Table::printStatus, this, boost::asio::placeholders::error, filehandle, timeout));
+	print_timer->async_wait(boost::bind(&Async_Auto_Table::printStatus, this, boost::asio::placeholders::error, filename, timeout));
 
 }

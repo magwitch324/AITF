@@ -33,8 +33,8 @@ int main(int argc, char **argv){
 	char command[200];
 	PacketManager * pms[argc-1];
 
-	PolicyModule policy();
-	FilterModule filter();
+	PolicyModule * policy = new PolicyModule();
+	FilterModule * filter = new FilterModule();
 
 	llog(logINFO) << "Starting Main";
 	set_log_level(4);
@@ -62,8 +62,6 @@ int main(int argc, char **argv){
 
 	delete policy;
 	delete filter;
-
-	delete[] pms;
 
 	llog(logINFO) << "Finishing Main";
 

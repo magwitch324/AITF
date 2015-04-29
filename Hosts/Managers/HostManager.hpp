@@ -24,7 +24,8 @@
 class HostManager {
 	public:
 		HostManager(struct nfq_handle * a_nfq_handle, int queue_num);
-		virtual ~HostManager();
+		virtual ~HostManager() {};
+		virtual int packetCallbackFunc(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg, struct nfq_data *nfad, void *data) = 0;
 
 	protected:
 		enum {STARTING, STARTED, ENDING, ENDED};
@@ -32,13 +33,12 @@ class HostManager {
 		boost::thread * packet_thread;
 		nfq_q_handle * queue_handle;
 		void packetRecieveThreadFunc(struct nfq_handle * a_nfq_handle);
-		static u_int32_t getPktID (struct nfq_data *tb);
-		virtual int packetCallbackFunc(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg, struct nfq_data *nfad, void *data) = 0;
+		u_int32_t getPktID (struct nfq_data *tb);
 
 };
 
 static int callbackForward(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg, struct nfq_data *nfad, void *data){
-	HostManager * temp = dynamic_cast<HostManager *> (data);
+	HostManager * temp = static_cast<HostManager *> (data);
 	return temp->packetCallbackFunc(qh, nfmsg, nfad, NULL);
 }
 

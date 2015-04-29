@@ -9,13 +9,15 @@
 #define VICTIMMANAGER_HPP_
 
 #include "HostManager.hpp"
+#include "../Modules/PolicyModule.hpp"
 
 class VictimManager : public HostManager{
 	public:
 		VictimManager(struct nfq_handle * a_nfq_handle, int victim_queue_num, PolicyModule * pol);
 		~VictimManager();
-	protected:
 		int packetCallbackFunc(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg, struct nfq_data *nfad, void *data);
+
+	protected:
 		PolicyModule * policy;
 };
 

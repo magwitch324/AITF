@@ -5,6 +5,7 @@
  *      Author: Sean
  */
 
+#include "FilterModule.hpp"
 
 FilterModule::FilterModule() {
 
