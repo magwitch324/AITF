@@ -4,10 +4,11 @@
 #include "Aitf_Manager.hpp"
 #include "Udp_Server.hpp"
 #include "../Hasher.hpp"
+#include "../Constants.hpp"
 
 #define DST_REQ_INDEX 78
 
-uint32_t MY_IP = 101;
+
 
 Aitf_Manager::Aitf_Manager(){
 

@@ -2,10 +2,11 @@
 #define PACKET_SNIFFER_HPP
 #include <stdint.h>
 #include <vector>
+#include "../Flow.hpp"
 
 class Packet_Sniffer{
 	public:
-		virtual void packet_callback(std::vector<uint8_t> recv_buf) = 0;
+		virtual bool is_allowed(Flow flow, std::vector<uint8_t> payload) = 0;
 };
 
 #endif

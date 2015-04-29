@@ -28,7 +28,7 @@ class Packet_Manager {
 		static uint32_t print_pkt (struct nfq_data *tb);
 		enum {STARTING, STARTED, ENDING, ENDED};
 		mutable boost::atomic<int> state;
-		Packet_Sniffer* listener;
+		static Packet_Sniffer* listener;
 		struct nfq_handle * my_netfilterqueue_handle;
 		struct nfq_q_handle * internet_queue_handle;
 
