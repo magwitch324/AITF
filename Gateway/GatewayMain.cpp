@@ -32,40 +32,26 @@ void set_log_level(int level){
 	}
 }
 
-static uint32_t strToIP(const char * str_ip){
-	uint32_t part1, part2, part3, part4, num_ip;
-	part1 = part2 = part3 = part4 = num_ip = 0;
-	sscanf(str_ip, "%d.%d.%d.%d", &part1, &part2, &part3, &part4);
-	num_ip += part1;
-	num_ip << 8;
-	num_ip += part2;
-	num_ip << 8;
-	num_ip += part3;
-	num_ip << 8;
-	num_ip += part4;
-	num_ip << 8;
-
-	return htonl(num_ip);
-}
-
 void set_gateway_values(int x){
 	gateway_key = new std::string(std::to_string(x));
 
 	//add any non AITF enabled hosts
 	nonaitf_dests_table->add_dst(16777343);
+	uint32_t ip = inet_addr("10.10.128.129");
+	nonaitf_dests_table->add_dst(ip);
 
 	switch(x){
 		case 1:
-			MY_IP = strToIP("10.4.13.1");
+			MY_IP = inet_addr("10.4.13.1");
 		break;
 		case 2:
-			MY_IP = strToIP("10.4.13.2");
+			MY_IP = inet_addr("10.4.13.2");
 		break;
 		case 3:
-			MY_IP = strToIP("10.4.13.3");
+			MY_IP = inet_addr("10.4.13.3");
 		break;
 		case 4:
-			MY_IP = strToIP("10.4.13.4");
+			MY_IP = inet_addr("10.4.13.4");
 		break;
 	}
 }
