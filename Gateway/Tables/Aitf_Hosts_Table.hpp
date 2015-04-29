@@ -15,14 +15,13 @@ class Aitf_Hosts_Table : public Timed_Table{
 
 	public:
 		Aitf_Hosts_Table();
-		~Aitf_Hosts_Table();
 		bool check_from_rate(uint32_t ip);
 		bool contains_host(uint32_t ip);
-
+		void add_host(uint32_t host_ip, int limit);
 
 	private:
 		void decrement_from(const boost::system::error_code& e, boost::shared_ptr<boost::asio::deadline_timer> timer, uint32_t ip);
-		std::unordered_map<uint32_t, Filter_Info*> hosts;
+		std::unordered_map<uint32_t, Filter_Info> hosts;
 };
 
 extern Aitf_Hosts_Table* aitf_hosts_table;

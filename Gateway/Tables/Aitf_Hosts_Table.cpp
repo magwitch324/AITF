@@ -5,19 +5,21 @@
 #include "../logger.hpp"
 
 Aitf_Hosts_Table::Aitf_Hosts_Table(){
-	Filter_Info* info = new Filter_Info();
-	info->from_amount = 0;
-	info->from_limit = 2;
-	Filter_Info* info2 = new Filter_Info();
-	info2->from_amount = 0;
-	info2->from_limit = 2;
+	/*Filter_Info info;
+	info.from_amount = 0;
+	info.from_limit = 2;
+	Filter_Info info2;
+	info2.from_amount = 0;
+	info2.from_limit = 2;
 	hosts[99] = info;
-	hosts[2] = info2;
+	hosts[2] = info2;*/
 }
 
-Aitf_Hosts_Table::~Aitf_Hosts_Table(){
-	delete(hosts[99]);
-	delete(hosts[2]);
+void Aitf_Hosts_Table::add_host(uint32_t host_ip, int limit){
+	Filter_Info info;
+	info.from_amount = 0;
+	info.from_limit = limit;
+	hosts[host_ip] = info;
 }
 
 bool Aitf_Hosts_Table::check_from_rate(uint32_t ip){
@@ -31,14 +33,14 @@ bool Aitf_Hosts_Table::check_from_rate(uint32_t ip){
 
 	//check if the ip is in the table
 	if(hosts.count(ip) == 1){
-		Filter_Info* host = hosts[ip];
+		Filter_Info host = hosts[ip];
 
 		//check that the host hasnt exceeded limit
-		if(host->from_amount < host->from_limit){
+		if(host.from_amount < host.from_limit){
 			log(logDEBUG2) << "Allowing request for " << ip;
 
 			//increment the counter and allow the request
-			host->from_amount++;
+			hosts[ip].from_amount++;
 			allowed = true;
 
 			//set the callback to decrement the value
@@ -75,7 +77,7 @@ void Aitf_Hosts_Table::decrement_from(const boost::system::error_code& e, boost:
 	//lock the table
 	table_mutex.lock();
 	log(logDEBUG2) << "Decrementing from " << ip;
-	hosts[ip]->from_amount--;
+	hosts[ip].from_amount--;
 
 	//unlock the table
 	table_mutex.unlock();

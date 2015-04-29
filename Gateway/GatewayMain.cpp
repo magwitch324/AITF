@@ -32,6 +32,44 @@ void set_log_level(int level){
 	}
 }
 
+static uint32_t strToIP(const char * str_ip){
+	uint32_t part1, part2, part3, part4, num_ip;
+	part1 = part2 = part3 = part4 = num_ip = 0;
+	sscanf(str_ip, "%d.%d.%d.%d", &part1, &part2, &part3, &part4);
+	num_ip += part1;
+	num_ip << 8;
+	num_ip += part2;
+	num_ip << 8;
+	num_ip += part3;
+	num_ip << 8;
+	num_ip += part4;
+	num_ip << 8;
+
+	return htonl(num_ip);
+}
+
+void set_gateway_values(int x){
+	gateway_key = new std::string(std::to_string(x));
+
+	//add any non AITF enabled hosts
+	nonaitf_dests_table->add_dst(16777343);
+
+	switch(x){
+		case 0:
+			MY_IP = strToIP("10.4.13.100");
+		break;
+		case 1:
+			MY_IP = strToIP("10.4.13.101");
+		break;
+		case 2:
+			MY_IP = strToIP("10.4.13.102");
+		break;
+		case 3:
+			MY_IP = strToIP("10.4.13.103");
+		break;
+	}
+}
+
 /*
    Main function for the Gateway. Initaites the AITF manager and
    the internet traffic manager
@@ -40,32 +78,38 @@ int main(int argc, char* argv[]){
 
 	set_log_level(4);
 
-	//grab the key value
+	aitf_hosts_table = new Aitf_Hosts_Table();
+	aitf_hosts_table->start_thread();
+	filter_table = new Filter_Table();
+	filter_table->start_thread();
+	shadow_table = new Filter_Table();
+	shadow_table->start_thread();
+	nonaitf_dests_table = new Nonaitf_Dests_Table();
+
+
+	//set the gateway info
 	if(argc == 2){
-	  gateway_key = new std::string(argv[1]);
-	  }
-	  else{
-	  gateway_key = new std::string("123456");
-	  }
+		set_gateway_values(atoi(argv[1]));
+	}
+	else{
+		set_gateway_values(1);
+	}
 
-	  aitf_hosts_table = new Aitf_Hosts_Table();
-	  aitf_hosts_table->start_thread();
-	  filter_table = new Filter_Table();
-	  filter_table->start_thread();
-	  shadow_table = new Filter_Table();
-	  shadow_table->start_thread();
-	  nonaitf_dests_table = new Nonaitf_Dests_Table();
-/*
-	  Aitf_Manager* aitf_manager = new Aitf_Manager();
-	  aitf_manager->start_thread();
+
+	Aitf_Manager* aitf_manager = new Aitf_Manager();
+	aitf_manager->start_thread();
+
+	Internet_Manager* i_manager = new Internet_Manager();
+	i_manager->start_thread();
 
 
 
-	  int x;
-	  std::cin >> x;
+	int x;
+	std::cin >> x;
 
 	//stop primary threads
 	aitf_manager->stop_thread();
+	i_manager->stop_thread();
 
 	//stop table threads
 	aitf_hosts_table->stop_thread();
@@ -74,23 +118,14 @@ int main(int argc, char* argv[]){
 
 	//cleanup
 	delete(aitf_manager);
+	delete(i_manager);
 
 	delete(aitf_hosts_table);
 	delete(filter_table);
 	delete(shadow_table);
+	delete(nonaitf_dests_table);
 
-	delete(gateway_key);*/
-
-
-
-	Internet_Manager* i_manager = new Internet_Manager();
-	i_manager->start_thread();
-
-	int x;
-	std::cin >> x;
-
-	i_manager->stop_thread();
-	delete(i_manager);
+	delete(gateway_key);
 
 }
 

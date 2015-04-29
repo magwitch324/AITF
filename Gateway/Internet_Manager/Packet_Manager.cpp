@@ -114,16 +114,48 @@ int Packet_Manager::packet_callback(struct nfq_q_handle *qh, struct nfgenmsg *nf
 		//If the packet already has an RR header
 		log(logDEBUG) << "AITF PACKET!!!!";
 
-		unsigned char modified_packet[len-82];
-		memcpy(&modified_packet[0], ORIGINAL_DATA, sizeof(*ipHeader));
-		memcpy(&modified_packet[sizeof(*ipHeader)], ORIGINAL_DATA + sizeof(*ipHeader) + 82, len - sizeof(*ipHeader) - 82);
-		((struct iphdr*) &modified_packet[0])->protocol = 17;
-		((struct iphdr*) &modified_packet[0])->tot_len = htons(len-82);
+		//make a copy of the packet to edit
+		unsigned char modified_packet[len];
+		memcpy(&modified_packet[0], ORIGINAL_DATA, len);
 
+		//get the Flow from the RR header
+		Flow flow(std::vector<uint8_t>(&modified_packet[sizeof(*ipHeader)+1], &modified_packet[sizeof(*ipHeader)+1]+81));
+		uint8_t ptr = flow.pointer + 1;
+
+		//if the number of gateways exceeds 6 drop the packet
+		if(ptr > 5){
+			log(logDEBUG) << "Dropping packet due to excessive gateways";
+			return nfq_set_verdict(qh, id, NF_DROP, 0, NULL);
+		}
+
+		//compute the rvalue and set the gateway info
+		uint64_t rvalue = Hasher::hash(*gateway_key, (unsigned char*) &flow.dst_ip, 4);
+		flow.set_gtw_ip_at(ptr, MY_IP);
+		flow.set_gtw_rvalue_at(ptr, rvalue);
+		flow.pointer = ptr;
+
+
+		//grab the payload if the original protocol was UDP
+		std::vector<uint8_t> payload(0);
+		if(modified_packet[sizeof(*ipHeader)] == IPPROTO_UDP){
+			struct udphdr* udp_info = (struct udphdr*) ORIGINAL_DATA + sizeof(*ipHeader) + 82;
+			unsigned char * data_start = ORIGINAL_DATA + sizeof(*ipHeader) + 82 + sizeof(*udp_info);
+			int data_len = len - sizeof(*ipHeader) - 82 - sizeof(*udp_info);
+			payload.assign(data_start, data_start+data_len);
+		}
+		//check to see if there is a filter for the flow
+		bool is_allowed = listener->is_allowed(flow, payload);
+
+		if(!is_allowed){
+			return nfq_set_verdict(qh, id, NF_DROP, 0, NULL);
+		}
+
+		//if the packet is allowed on then reinsert the new flow and recompute checksum
+		memcpy(&modified_packet[sizeof(*ipHeader) + 1], &flow.to_byte_vector()[0], 81);
 		//compute the new checksum
 		compute_ip_checksum((struct iphdr*) &modified_packet[0]);
 		log(logDEBUG2) << std::hex << ((struct iphdr*) &modified_packet[0])->check;
-		return nfq_set_verdict(qh, id, NF_ACCEPT, len-82, &modified_packet[0]);
+		return nfq_set_verdict(qh, id, NF_ACCEPT, len, &modified_packet[0]);
 	}
 	else{
 		log(logDEBUG) << "Non AITF traffic";
@@ -136,7 +168,7 @@ int Packet_Manager::packet_callback(struct nfq_q_handle *qh, struct nfgenmsg *nf
 			return nfq_set_verdict(qh, id, NF_ACCEPT, 0, NULL);
 		}
 		else{
-			log(logDEBUG) << "Destination is AITF";
+			log(logDEBUG) << "Destination is AITF dst: " << dst_ip;
 			//The dest is AITF enabled
 			//Insert a new RR header
 			unsigned char modified_packet[len+82];
@@ -185,26 +217,39 @@ int Packet_Manager::packet_callback(struct nfq_q_handle *qh, struct nfgenmsg *nf
 		}
 
 	}
-	/*if(ipHeader->protocol == IPPROTO_UDP){
-		log(logDEBUG) << "Udp Packet";
+	/*
 
-		unsigned char modified_packet[len+82];
-		memcpy(&modified_packet[0], ORIGINAL_DATA, sizeof(*ipHeader));
-		memcpy(&modified_packet[sizeof(*ipHeader) + 82], ORIGINAL_DATA + sizeof(*ipHeader), len - sizeof(*ipHeader));
-		((struct iphdr*) &modified_packet[0])->protocol = 143;
-		((struct iphdr*) &modified_packet[0])->tot_len = htons(len+82);
+	// removes the AITF header
+	unsigned char modified_packet[len-82];
+	memcpy(&modified_packet[0], ORIGINAL_DATA, sizeof(*ipHeader));
+	memcpy(&modified_packet[sizeof(*ipHeader)], ORIGINAL_DATA + sizeof(*ipHeader) + 82, len - sizeof(*ipHeader) - 82);
+	((struct iphdr*) &modified_packet[0])->protocol = 17;
+	((struct iphdr*) &modified_packet[0])->tot_len = htons(len-82);
 
-		//compute the new checksum
-		compute_ip_checksum((struct iphdr*) &modified_packet[0]);
-		log(logDEBUG2) << std::hex << ((struct iphdr*) &modified_packet[0])->check;
-		return nfq_set_verdict(qh, id, NF_ACCEPT, len+82, &modified_packet[0]);
-	}*/
+	//compute the new checksum
+	compute_ip_checksum((struct iphdr*) &modified_packet[0]);
+	log(logDEBUG2) << std::hex << ((struct iphdr*) &modified_packet[0])->check;
 
-	//issue a verdict on a packet
-	//qh: netfilter queue handle; id: ID assigned to packet by netfilter; verdict: verdict to return to netfilter, data_len: number
-	//of bytes of data pointed by buf, buf: the buffer that contains the packet data (payload)
-	// return nfq_set_verdict(qh, id, NF_ACCEPT, 0, NULL);
-	//return nfq_set_verdict(qh, id, NF_ACCEPT, len, ORIGINAL_DATA);
+	if(ipHeader->protocol == IPPROTO_UDP){
+	log(logDEBUG) << "Udp Packet";
+
+	unsigned char modified_packet[len+82];
+	memcpy(&modified_packet[0], ORIGINAL_DATA, sizeof(*ipHeader));
+	memcpy(&modified_packet[sizeof(*ipHeader) + 82], ORIGINAL_DATA + sizeof(*ipHeader), len - sizeof(*ipHeader));
+	((struct iphdr*) &modified_packet[0])->protocol = 143;
+	((struct iphdr*) &modified_packet[0])->tot_len = htons(len+82);
+
+//compute the new checksum
+compute_ip_checksum((struct iphdr*) &modified_packet[0]);
+log(logDEBUG2) << std::hex << ((struct iphdr*) &modified_packet[0])->check;
+return nfq_set_verdict(qh, id, NF_ACCEPT, len+82, &modified_packet[0]);
+}*/
+
+//issue a verdict on a packet
+//qh: netfilter queue handle; id: ID assigned to packet by netfilter; verdict: verdict to return to netfilter, data_len: number
+//of bytes of data pointed by buf, buf: the buffer that contains the packet data (payload)
+// return nfq_set_verdict(qh, id, NF_ACCEPT, 0, NULL);
+//return nfq_set_verdict(qh, id, NF_ACCEPT, len, ORIGINAL_DATA);
 }
 
 
