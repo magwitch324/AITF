@@ -113,6 +113,7 @@ int Packet_Manager::packet_callback(struct nfq_q_handle *qh, struct nfgenmsg *nf
 	if(ipHeader->protocol == 143){
 		//if this gateway is the destination, remove the AITF header and allow packet
 		if(ipHeader->daddr == MY_IP){
+			log(logDEBUG) << "Destination is this gateway";
 			unsigned char modified_packet[len-82];
 			memcpy(&modified_packet[0], ORIGINAL_DATA, sizeof(*ipHeader));
 			memcpy(&modified_packet[sizeof(*ipHeader)], ORIGINAL_DATA + sizeof(*ipHeader) + 82, len - sizeof(*ipHeader) - 82);
@@ -176,8 +177,8 @@ int Packet_Manager::packet_callback(struct nfq_q_handle *qh, struct nfgenmsg *nf
 		//pull out the destination ip
 		u_int32_t dst_ip = ipHeader->daddr;
 		//If the destination is not AITF compliant
-		if(nonaitf_dests_table->is_nonaitf(dst_ip)){
-			log(logDEBUG) << "Destination is Non AITF";
+		if(nonaitf_dests_table->is_nonaitf(dst_ip) || dst_ip == MY_IP){
+			log(logDEBUG) << "Destination is Non AITF OR is this gateway";
 			//the destination is not aitf enabled. allow the packet to continue
 			return nfq_set_verdict(qh, id, NF_ACCEPT, 0, NULL);
 		}
