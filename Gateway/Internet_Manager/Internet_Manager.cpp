@@ -8,15 +8,22 @@
 Internet_Manager::Internet_Manager(){
 	std::string command = "iptables -A OUTPUT -j NFQUEUE --queue-num 1";
 	log(logINFO) << command;
-
 	system( command.c_str() );
+	std::string command2 = "iptables -A INPUT -j NFQUEUE --queue-num 1";
+	log(logINFO) << command2;
+	system( command2.c_str() );
+
+
 }
 
 Internet_Manager::~Internet_Manager(){
 	std::string command = "iptables -D OUTPUT -j NFQUEUE --queue-num 1";
 	log(logINFO) << command;
-
 	system( command.c_str() );
+	std::string command2 = "iptables -D INPUT -j NFQUEUE --queue-num 1";
+	log(logINFO) << command2;
+
+	system( command2.c_str() );
 }
 
 void Internet_Manager::start_thread(){
@@ -29,6 +36,8 @@ void Internet_Manager::stop_thread(){
 	packet_manager->stop();
 	internet_thread.interrupt();
 	internet_thread.join();
+	delete(packet_manager);
+
 }
 
 void Internet_Manager::run(){
@@ -37,29 +46,19 @@ void Internet_Manager::run(){
 }
 
 
-void Internet_Manager::packet_callback(std::vector<uint8_t> packet){
-	//Determine if the packet has an RR header
-
-	//if it does have an RR header
-	//add IP and RV to header
-
-	//If it does not have an RR header
-	//consult non-AITF endhost table
-	//If dest is present, approve packet.
-	//Else create RR header and add ip and rv
-
+bool Internet_Manager::is_allowed(Flow flow, std::vector<uint8_t> payload){
+	bool is_allowed = true;
 	//Check if a filter exists for the packet
-	Flow flow;
 	if(filter_table->flow_is_filtered(flow)){
-
+		is_allowed = false;
+		
+		//if this message is from a gateway then it is part of a handshake
+		if(flow.src_ip == flow.gtw0_ip){
+			handle_handshake(payload);
+		}
 	}
-	//If no, allow the packet
 
-	//If yes
-	//Is the src the same as the first gateway IP
-	//If yes handle handshake
-	//If no drop the packet
-
+	return is_allowed;
 }
 
 void Internet_Manager::handle_handshake(std::vector<uint8_t> message){

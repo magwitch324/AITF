@@ -9,10 +9,10 @@ class Internet_Manager : Packet_Sniffer{
 	public:
 		Internet_Manager();
 		~Internet_Manager();
-		void packet_callback(std::vector<uint8_t> packet);
+		bool is_allowed(Flow flow, std::vector<uint8_t> payload);
 		void start_thread();
 		void stop_thread();
-		
+
 	private:
 		void run();
 		void handle_handshake(std::vector<uint8_t> message);

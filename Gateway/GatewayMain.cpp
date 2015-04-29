@@ -6,6 +6,7 @@
 #include "Aitf_Manager/Aitf_Manager.hpp"
 #include "Internet_Manager/Internet_Manager.hpp"
 #include "Tables/Aitf_Hosts_Table.hpp"
+#include "Tables/Nonaitf_Dests_Table.hpp"
 
 
 std::string* gateway_key;
@@ -13,6 +14,8 @@ loglevel_e loglevel = logERROR;
 Aitf_Hosts_Table* aitf_hosts_table;
 Filter_Table* filter_table;
 Filter_Table* shadow_table;
+Nonaitf_Dests_Table* nonaitf_dests_table;
+uint32_t MY_IP = 101;
 
 void set_log_level(int level){
 	switch(level){
@@ -38,7 +41,7 @@ int main(int argc, char* argv[]){
 	set_log_level(4);
 
 	//grab the key value
-	/*if(argc == 2){
+	if(argc == 2){
 	  gateway_key = new std::string(argv[1]);
 	  }
 	  else{
@@ -51,7 +54,8 @@ int main(int argc, char* argv[]){
 	  filter_table->start_thread();
 	  shadow_table = new Filter_Table();
 	  shadow_table->start_thread();
-
+	  nonaitf_dests_table = new Nonaitf_Dests_Table();
+/*
 	  Aitf_Manager* aitf_manager = new Aitf_Manager();
 	  aitf_manager->start_thread();
 
