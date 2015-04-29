@@ -1,5 +1,5 @@
 sudo apt-get update
-sudo apt-get install git libboost-all-dev make g++ pkg-config openssl
+sudo apt-get install -y git libboost-all-dev make g++ pkg-config openssl
 
 cd Libraries/libmnl-1.0.3/
 sudo chmod +x ./configure
