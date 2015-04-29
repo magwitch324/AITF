@@ -55,17 +55,17 @@ void set_gateway_values(int x){
 	nonaitf_dests_table->add_dst(16777343);
 
 	switch(x){
-		case 0:
-			MY_IP = strToIP("10.4.13.100");
-		break;
 		case 1:
-			MY_IP = strToIP("10.4.13.101");
+			MY_IP = strToIP("10.4.13.1");
 		break;
 		case 2:
-			MY_IP = strToIP("10.4.13.102");
+			MY_IP = strToIP("10.4.13.2");
 		break;
 		case 3:
-			MY_IP = strToIP("10.4.13.103");
+			MY_IP = strToIP("10.4.13.3");
+		break;
+		case 4:
+			MY_IP = strToIP("10.4.13.4");
 		break;
 	}
 }

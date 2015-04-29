@@ -1,5 +1,5 @@
 sudo apt-get update
-sudo apt-get install -y libboost-all-dev make g++ pkg-config libssl-dev
+sudo apt-get install -y libboost-all-dev make g++ pkg-config libssl-dev libnetfilter-queue-dev
 
 cd Libraries/libmnl-1.0.3/
 sudo chmod +x ./configure
@@ -20,8 +20,5 @@ sudo chmod +x ./configure
 make
 sudo make install
 
-cd ../..
-make
-
-cd Gateway
+cd ../../Gateway
 make

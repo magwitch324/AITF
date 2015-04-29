@@ -111,6 +111,20 @@ int Packet_Manager::packet_callback(struct nfq_q_handle *qh, struct nfgenmsg *nf
 
 
 	if(ipHeader->protocol == 143){
+		//if this gateway is the destination, remove the AITF header and allow packet
+		if(ipHeader->daddr == MY_IP){
+			unsigned char modified_packet[len-82];
+			memcpy(&modified_packet[0], ORIGINAL_DATA, sizeof(*ipHeader));
+			memcpy(&modified_packet[sizeof(*ipHeader)], ORIGINAL_DATA + sizeof(*ipHeader) + 82, len - sizeof(*ipHeader) - 82);
+			((struct iphdr*) &modified_packet[0])->protocol = *((uint8_t*)ORIGINAL_DATA+sizeof(*ipHeader));
+			((struct iphdr*) &modified_packet[0])->tot_len = htons(len-82);
+
+			//compute the new checksum
+			compute_ip_checksum((struct iphdr*) &modified_packet[0]);
+			log(logDEBUG2) << std::hex << ((struct iphdr*) &modified_packet[0])->check;
+			return nfq_set_verdict(qh, id, NF_ACCEPT, len-82, &modified_packet[0]);
+		}
+
 		//If the packet already has an RR header
 		log(logDEBUG) << "AITF PACKET!!!!";
 
