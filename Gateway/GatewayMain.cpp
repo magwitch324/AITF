@@ -3,16 +3,16 @@
 #include <boost/date_time.hpp>
 #include "logger.hpp"
 #include "Hasher.hpp"
-#include "Aitf_Manager/Aitf_Manager.hpp"
+//#include "Aitf_Manager/Aitf_Manager.hpp"
 #include "Internet_Manager/Internet_Manager.hpp"
-#include "Tables/Aitf_Hosts_Table.hpp"
+//#include "Tables/Aitf_Hosts_Table.hpp"
 
 
 std::string* gateway_key;
 loglevel_e loglevel = logERROR;
-Aitf_Hosts_Table* aitf_hosts_table;
-Filter_Table* filter_table;
-Filter_Table* shadow_table;
+//Aitf_Hosts_Table* aitf_hosts_table;
+//Filter_Table* filter_table;
+//Filter_Table* shadow_table;
 
 void set_log_level(int level){
 	switch(level){

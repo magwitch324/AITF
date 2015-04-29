@@ -39,7 +39,7 @@ VictimManager::VictimManager(struct nfq_handle * a_nfq_handle, int victim_queue_
 	this->packet_thread = new boost::thread(boost::bind(&VictimManager::packetThreadFunc, this, _1), a_nfq_handle);
 
 	this->state.store(this->STARTED, boost::memory_order_relaxed);
-	
+
 }
 
 VictimManager::~VictimManager(void) {
@@ -54,16 +54,16 @@ VictimManager::~VictimManager(void) {
 
 void VictimManager::packetThreadFunc(struct nfq_handle * a_nfq_handle) {
 	llog(logINFO) << "Starting Victim Thread";
-        int fd;
-        int rv;
-        char buf[4096] __attribute__ ((aligned));
-	
+	int fd;
+	int rv;
+	char buf[4096] __attribute__ ((aligned));
+
 	fd_set readset;
-   	struct timeval tv;
+	struct timeval tv;
 
 	fd = nfq_fd(a_nfq_handle);
 
-        while (this->ENDING != this->state.load(boost::memory_order_relaxed)) {
+	while (this->ENDING != this->state.load(boost::memory_order_relaxed)) {
 		FD_ZERO(&readset);
 		FD_SET(fd, &readset);
 		tv.tv_sec = 0;
@@ -77,6 +77,6 @@ void VictimManager::packetThreadFunc(struct nfq_handle * a_nfq_handle) {
 			continue;
 		}
 		llog(logINFO) << "Victim Queue is Receiceiving Packet";
-                nfq_handle_packet(a_nfq_handle, buf, rv);
-        }
+		nfq_handle_packet(a_nfq_handle, buf, rv);
+	}
 }

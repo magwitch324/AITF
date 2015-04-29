@@ -12,7 +12,7 @@ class Internet_Manager : Packet_Sniffer{
 		void packet_callback(std::vector<uint8_t> packet);
 		void start_thread();
 		void stop_thread();
-		
+
 	private:
 		void run();
 		void handle_handshake(std::vector<uint8_t> message);
