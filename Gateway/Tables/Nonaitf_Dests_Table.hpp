@@ -5,6 +5,7 @@
 class Nonaitf_Dests_Table{
 	public:
 		bool is_nonaitf(uint32_t dst_ip);
+		void add_dst(uint32_t dst_ip);
 	private:
 		std::unordered_set<uint32_t> non_aitf_dests;
 };

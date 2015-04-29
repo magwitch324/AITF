@@ -9,9 +9,9 @@ Internet_Manager::Internet_Manager(){
 	std::string command = "iptables -A OUTPUT -j NFQUEUE --queue-num 1";
 	log(logINFO) << command;
 	system( command.c_str() );
-	std::string command2 = "iptables -A INPUT -j NFQUEUE --queue-num 1";
-	log(logINFO) << command2;
-	system( command2.c_str() );
+	//std::string command2 = "iptables -A INPUT -j NFQUEUE --queue-num 1";
+	//log(logINFO) << command2;
+	//system( command2.c_str() );
 
 
 }
@@ -20,10 +20,10 @@ Internet_Manager::~Internet_Manager(){
 	std::string command = "iptables -D OUTPUT -j NFQUEUE --queue-num 1";
 	log(logINFO) << command;
 	system( command.c_str() );
-	std::string command2 = "iptables -D INPUT -j NFQUEUE --queue-num 1";
-	log(logINFO) << command2;
 
-	system( command2.c_str() );
+	//std::string command2 = "iptables -D INPUT -j NFQUEUE --queue-num 1";
+	//log(logINFO) << command2;
+	//system( command2.c_str() );
 }
 
 void Internet_Manager::start_thread(){
@@ -51,7 +51,7 @@ bool Internet_Manager::is_allowed(Flow flow, std::vector<uint8_t> payload){
 	//Check if a filter exists for the packet
 	if(filter_table->flow_is_filtered(flow)){
 		is_allowed = false;
-		
+
 		//if this message is from a gateway then it is part of a handshake
 		if(flow.src_ip == flow.gtw0_ip){
 			handle_handshake(payload);
