@@ -3,10 +3,13 @@
  *
  */
 
+#include <string>
+
 #include "logger.hpp"
 
 #include "Managers/PacketManager.hpp"
-#include <string>
+#include "Modules/FilterModule.hpp"
+#include "Modules/PolicyModule.hpp"
 
 loglevel_e loglevel = logERROR;
 
@@ -30,6 +33,9 @@ int main(int argc, char **argv){
 	char command[200];
 	PacketManager * pms[argc-1];
 
+	PolicyModule policy();
+	FilterModule filter();
+
 	llog(logINFO) << "Starting Main";
 	set_log_level(4);
 
@@ -39,7 +45,7 @@ int main(int argc, char **argv){
 		system( command );
 		sprintf( command, "iptables -A OUTPUT -s %s -j NFQUEUE --queue-num %u", argv[i], i*2+2 );
 		system( command );
-		pms[i-1] = new PacketManager(i*2+1, i*2+2);
+		pms[i-1] = new PacketManager(i*2+1, i*2+2, policy, filter);
 	}
 
 
@@ -53,6 +59,11 @@ int main(int argc, char **argv){
 		sprintf( command, "iptables -D INPUT -d %s -j NFQUEUE --queue-num %u", argv[i], i*2+1 );
 		system( command );
 	}
+
+	delete policy;
+	delete filter;
+
+	delete[] pms;
 
 	llog(logINFO) << "Finishing Main";
 

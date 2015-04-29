@@ -8,31 +8,15 @@
 #ifndef VICTIMMANAGER_HPP_
 #define VICTIMMANAGER_HPP_
 
-#include <libmnl/libmnl.h>
-#include <netinet/in.h>
-#include <linux/netfilter.h>
-#include <linux/netfilter/nfnetlink.h>
+#include "HostManager.hpp"
 
-#include <linux/types.h>
-#include <linux/netfilter/nfnetlink_queue.h>
-
-#include <libnetfilter_queue/libnetfilter_queue.h>
-
-#include <boost/atomic.hpp>
-#include <boost/thread.hpp>
-
-class VictimManager {
+class VictimManager : public HostManager{
 	public:
-		VictimManager(struct nfq_handle * a_nfq_handle, int victim_queue_num);
+		VictimManager(struct nfq_handle * a_nfq_handle, int victim_queue_num, PolicyModule * pol);
 		~VictimManager();
-
-	private:
-		enum {STARTING, STARTED, ENDING, ENDED};
-		mutable boost::atomic<int> state;
-		boost::thread * packet_thread;
-		nfq_q_handle * victim_queue_handle;
-		void packetThreadFunc(struct nfq_handle * a_nfq_handle);
-
+	protected:
+		int packetCallbackFunc(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg, struct nfq_data *nfad, void *data);
+		PolicyModule * policy;
 };
 
 

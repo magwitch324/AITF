@@ -19,10 +19,12 @@
 
 #include "AttackManager.hpp"
 #include "VictimManager.hpp"
+#include "Modules/FilterModule.hpp"
+#include "Modules/PolicyModule.hpp"
 
 class PacketManager {
 	public:
-		PacketManager(int input_queue_num, int output_queue_num);
+		PacketManager(int input_queue_num, int output_queue_num, PolicyModule * policy, FilterModule * filter);
 		~PacketManager();
 
 	private:

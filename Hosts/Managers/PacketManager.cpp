@@ -2,15 +2,15 @@
 #include "PacketManager.hpp"
 #include "../logger.hpp"
 
-PacketManager::PacketManager(int input_queue_num, int output_queue_num) {
+PacketManager::PacketManager(int input_queue_num, int output_queue_num, PolicyModule * policy, FilterModule * filter) {
 	llog(logINFO) << "Starting PacketManager";
 
 	this->my_netfilterqueue_handle = nfq_open();
 	nfq_unbind_pf(this->my_netfilterqueue_handle, AF_INET);
 	nfq_bind_pf(this->my_netfilterqueue_handle, AF_INET);
 
-	this->victim_manager = new VictimManager(this->my_netfilterqueue_handle, input_queue_num);
-	this->attack_manager = new AttackManager(this->my_netfilterqueue_handle, output_queue_num);
+	this->victim_manager = new VictimManager(this->my_netfilterqueue_handle, input_queue_num, policy);
+	this->attack_manager = new AttackManager(this->my_netfilterqueue_handle, output_queue_num, filter);
 }
 
 
