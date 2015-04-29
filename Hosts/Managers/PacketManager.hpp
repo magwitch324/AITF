@@ -24,13 +24,15 @@
 
 class PacketManager {
 	public:
-		PacketManager(int input_queue_num, int output_queue_num, PolicyModule * policy, FilterModule * filter);
+		PacketManager(uint32_t ip, int input_queue_num, int output_queue_num, PolicyModule * policy, FilterModule * filter);
 		~PacketManager();
+		void aitfCommunication(std::vector<uint8_t> recv_buf);
 
 	private:
 		struct nfq_handle * my_netfilterqueue_handle;
 		AttackManager * attack_manager;
 		VictimManager * victim_manager;
+		uint32_t ip;
 };
 
 #endif /* PACKETMANAGER_HPP */

@@ -39,18 +39,24 @@ int main(int argc, char **argv){
 	llog(logINFO) << "Starting Main";
 	set_log_level(4);
 
+	Udp_Server * udps;
+	udps = udps->getInstance();
+
 	for ( i = 1; i < argc; i ++ ) {
 		printf ("iptables -A INPUT -s %s -j NFQUEUE --queue-num %u \n", argv[i], i*2+1);
 		sprintf( command, "iptables -A INPUT -d %s -j NFQUEUE --queue-num %u", argv[i], i*2+1 );
 		system( command );
 		sprintf( command, "iptables -A OUTPUT -s %s -j NFQUEUE --queue-num %u", argv[i], i*2+2 );
 		system( command );
-		pms[i-1] = new PacketManager(i*2+1, i*2+2, policy, filter);
+		pms[i-1] = new PacketManager( inet_addr(argv[i]), i*2+1, i*2+2, policy, filter);
 	}
 
+	udps->start();
 
 	int x;
 	std::cin >> x;
+
+	udps->stop();
 
 	for ( i = 1; i < argc; i ++ ) {
 		delete pms[i-1];
@@ -66,7 +72,6 @@ int main(int argc, char **argv){
 	llog(logINFO) << "Finishing Main";
 
 }
-
 
 
 

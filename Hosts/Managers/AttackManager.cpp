@@ -8,9 +8,10 @@
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
 
-AttackManager::AttackManager(struct nfq_handle * a_nfq_handle, int attack_queue_num, FilterModule * fil) : HostManager(a_nfq_handle, attack_queue_num)  {
+AttackManager::AttackManager(uint32_t ip, struct nfq_handle * a_nfq_handle, int attack_queue_num, FilterModule * fil) : HostManager(a_nfq_handle, attack_queue_num)  {
 	llog(logINFO) << "Starting AttackManager";
 	filter = fil;
+	my_ip = ip;
 }
 
 AttackManager::~AttackManager(void)  {
@@ -35,4 +36,32 @@ int AttackManager::packetCallbackFunc(struct nfq_q_handle *qh, struct nfgenmsg *
 	} 
 
 	return nfq_set_verdict(qh, id, NF_DROP, 0, NULL);
+}
+
+void AttackManager::addFilter(uint32_t dest, int timeout) {
+	//TODO add check for already existing request
+	filter->addNewFilter(dest, timeout);
+	this->sendFilterResponse(dest);
+}
+
+
+void AttackManager::sendFilterResponse(uint32_t dest) {
+	using namespace boost::asio;
+	using boost::asio::ip::udp;
+
+	boost::asio::io_service io_service;
+	udp::resolver resolver(io_service);
+	udp::resolver::query query(udp::v4(),"10.4.13.4","50000"); //TODO: change query string
+	udp::endpoint receiver_endpoint = *resolver.resolve(query);
+
+	udp::socket socket(io_service);
+	socket.open(udp::v4());
+
+	std::vector<uint8_t> message(0);
+
+	message[0] = 5;
+	memcpy(&message[1], &my_ip, 4);
+	memcpy(&message[5], &dest, 4);
+
+	socket.send_to(boost::asio::buffer(message), receiver_endpoint);
 }
