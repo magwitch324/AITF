@@ -1,4 +1,5 @@
 #include <netinet/ip.h>
+#include <arpa/inet.h>
 #include <linux/udp.h>
 #include "Packet_Manager.hpp"
 #include "../Tables/Nonaitf_Dests_Table.hpp"
@@ -163,6 +164,11 @@ int Packet_Manager::packet_callback(struct nfq_q_handle *qh, struct nfgenmsg *nf
 
 		if(!is_allowed){
 			return nfq_set_verdict(qh, id, NF_DROP, 0, NULL);
+		}
+		for(int i = 0; i <= flow.pointer; i++){
+			uint32_t ipInt = flow.get_gtw_ip_at(i);
+			in_addr* addr = (in_addr*) &ipInt;
+			log(logERROR) << "gtw ip " << i << inet_ntoa(*addr);
 		}
 
 		//if the packet is allowed on then reinsert the new flow and recompute checksum

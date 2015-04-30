@@ -79,9 +79,15 @@ int VictimManager::packetCallbackFunc(struct nfq_q_handle *qh, struct nfgenmsg *
 		unsigned char modified_packet[len];
 		memcpy(&modified_packet[0], ORIGINAL_DATA, len);
 		Flow flow(std::vector<uint8_t>(&modified_packet[sizeof(*ipHeader)+1], &modified_packet[sizeof(*ipHeader)+1]+81));
+
+		for(int i = 0; i <= flow.pointer; i++){
+			uint32_t ipInt = flow.get_gtw_ip_at(i);
+			in_addr* addr = (in_addr*) &ipInt;
+			llog(logERROR) << "gtw ip " << i << inet_ntoa(*addr);
+		}
 		
 		int val = policy->receivedPacket(flow, len-82);
-
+		llog(logERROR) << "RETURN VALUE: " << val;
 		if (val == -1) {
 			this->SendFilterRequest(&flow, false);
 		} else if (val == -2) {
