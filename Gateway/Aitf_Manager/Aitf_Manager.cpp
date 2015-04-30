@@ -284,6 +284,9 @@ void Aitf_Manager::handle_filter_request(std::vector<uint8_t> message){
 					handshake_flow.src_ip = handshake_flow.gtw0_ip;
 					filter_table->add_temp_filter(handshake_flow);
 
+					log(logDEBUG2) << "About to send 1handshake with:";
+					log(logDEBUG2) << "gtw0 rvalue of: " << flow.gtw0_rvalue;
+
 					//Send the handshake
 					send_message(flow.gtw0_ip, handshake);
 
