@@ -175,7 +175,7 @@ int PolicyModule::receivedPacket(Flow flow, int size){
 	int max = 0, bwu_ret;
 
 	if (defaults.count(flow.src_ip) > 0) {
-		llog(logINFO) << "Found max " << flow.src_ip << " for " << max = defaults[flow.src_ip];;
+		llog(logINFO) << "Found max " << flow.src_ip << " for " << defaults[flow.src_ip];;
 		max = defaults[flow.src_ip];
 	} else {
 		max = -1;
