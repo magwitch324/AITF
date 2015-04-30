@@ -173,6 +173,7 @@ int Packet_Manager::packet_callback(struct nfq_q_handle *qh, struct nfgenmsg *nf
 		return nfq_set_verdict(qh, id, NF_ACCEPT, len, &modified_packet[0]);
 	}
 	else{
+		//if it isnt AITF traffic
 		log(logDEBUG) << "Non AITF traffic";
 		//pull out the destination ip
 		u_int32_t dst_ip = ipHeader->daddr;

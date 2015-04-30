@@ -6,24 +6,31 @@
 #include "../logger.hpp"
 
 Internet_Manager::Internet_Manager(){
-	std::string command = "iptables -s 10.4.13.0/24 -A OUTPUT -j NFQUEUE --queue-num 1";
+	std::string command = "iptables -s 10.4.13.0/24 -d 10.4.13.0/24 -A OUTPUT -j NFQUEUE --queue-num 1";
 	log(logINFO) << command;
 	system( command.c_str() );
-	//std::string command2 = "iptables -A INPUT -j NFQUEUE --queue-num 1";
-	//log(logINFO) << command2;
-	//system( command2.c_str() );
+	std::string command2 = "iptables -s 10.4.13.0/24 -d 10.4.13.0/24 -A INPUT -j NFQUEUE --queue-num 1";
+	log(logINFO) << command2;
+	system( command2.c_str() );
 
+	std::string command3 = "iptables -s 10.4.13.0/24 -d 10.4.13.0/24 -A FORWARD -j NFQUEUE --queue-num 1";
+	log(logINFO) << command3;
+	system( command3.c_str() );
 
 }
 
 Internet_Manager::~Internet_Manager(){
-	std::string command = "iptables -s 10.4.13.0/24 -D OUTPUT -j NFQUEUE --queue-num 1";
+	std::string command = "iptables -s 10.4.13.0/24 -d 10.4.13.0/24 -D OUTPUT -j NFQUEUE --queue-num 1";
 	log(logINFO) << command;
 	system( command.c_str() );
 
-	//std::string command2 = "iptables -D INPUT -j NFQUEUE --queue-num 1";
-	//log(logINFO) << command2;
-	//system( command2.c_str() );
+	std::string command2 = "iptables -s 10.4.13.0/24 -d 10.4.13.0/24 -D INPUT -j NFQUEUE --queue-num 1";
+	log(logINFO) << command2;
+	system( command2.c_str() );
+
+	std::string command3 = "iptables -s 10.4.13.0/24 -d 10.4.13.0/24 -D FORWARD -j NFQUEUE --queue-num 1";
+	log(logINFO) << command3;
+	system( command3.c_str() );
 }
 
 void Internet_Manager::start_thread(){
