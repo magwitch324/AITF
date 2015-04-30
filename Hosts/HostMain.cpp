@@ -5,6 +5,8 @@
 
 #include <string>
 
+#include <boost/thread.hpp>
+
 #include "logger.hpp"
 
 #include "Managers/PacketManager.hpp"
@@ -27,6 +29,10 @@ void set_log_level(int level){
 		case 4: loglevel = logDEBUG2;
 			break;
 	}
+}
+
+void start_server(Udp_Server * udps) {
+	udps->start();
 }
 
 int main(int argc, char **argv){
@@ -53,13 +59,13 @@ int main(int argc, char **argv){
 		system( command );
 		pms[i-1] = new PacketManager( inet_addr(argv[i]), i*2+1, i*2+2, policy, filter);
 	}
-
-	udps->start();
+	boost::thread udp_thread(&start_server, udps);
 
 	int x;
 	std::cin >> x;
 
 	udps->stop();
+	udp_thread.join();
 
 	for ( i = 1; i < argc; i ++ ) {
 		delete pms[i-1];
@@ -75,6 +81,8 @@ int main(int argc, char **argv){
 	llog(logINFO) << "Finishing Main";
 
 }
+
+
 
 
 

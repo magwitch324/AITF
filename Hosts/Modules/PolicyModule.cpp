@@ -13,7 +13,7 @@
 PolicyModule::PolicyModule(){
 	llog(logDEBUG) << "Creating policy module";
 
-	bandwidthUsage = new Async_Auto_Flow_Table( "../hostBandwidth.log", 500);
+	bandwidthUsage = new Async_Auto_Flow_Table( "../hostBandwidth.log", 1000);
 	//bandwidthUsage = new Async_Auto_Flow_Table();
 
 	//filterRequests = new Async_Auto_Flow_Table( "../filterRequests.log", 1000);

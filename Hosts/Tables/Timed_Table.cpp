@@ -12,7 +12,9 @@ void Timed_Table::start_thread(){
 void Timed_Table::stop_thread(){
 	llog(logINFO) << "stopping table thread";
 	table_work.reset();
+	table_io.stop();
 	llog(logDEBUG) << "work reset";
+	table_thread.interrupt();
 	table_thread.join();
 	llog(logINFO) << "table thread stopped";
 }

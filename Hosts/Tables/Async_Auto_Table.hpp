@@ -21,12 +21,10 @@ class Async_Auto_Table : public Timed_Table {
 
 		int getValue(uint32_t ip);
 		int addValue(uint32_t ip, int value, int max, uint32_t timeout);
-		int compareValue(uint32_t ip, int value);
 
 	private:
 		void decrement(const boost::system::error_code& e, boost::shared_ptr<boost::asio::deadline_timer> timer, uint32_t ip, int value);
 		void printStatus(const boost::system::error_code& e, std::string filename, uint32_t timeout);
-
 		std::unordered_map<uint32_t, int> table;
 		boost::asio::deadline_timer * print_timer;
 

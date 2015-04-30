@@ -19,6 +19,7 @@ class Timed_Table{
 	private:
 		boost::thread table_thread;
 		boost::shared_ptr<boost::asio::io_service::work> table_work;
+
 		void run();
 
 };
