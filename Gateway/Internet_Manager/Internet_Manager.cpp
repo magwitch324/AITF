@@ -6,7 +6,7 @@
 #include "../logger.hpp"
 
 Internet_Manager::Internet_Manager(){
-	std::string command = "iptables -A OUTPUT -j NFQUEUE --queue-num 1";
+	std::string command = "iptables -s 10.4.13.0/24 -A OUTPUT -j NFQUEUE --queue-num 1";
 	log(logINFO) << command;
 	system( command.c_str() );
 	//std::string command2 = "iptables -A INPUT -j NFQUEUE --queue-num 1";
@@ -17,7 +17,7 @@ Internet_Manager::Internet_Manager(){
 }
 
 Internet_Manager::~Internet_Manager(){
-	std::string command = "iptables -D OUTPUT -j NFQUEUE --queue-num 1";
+	std::string command = "iptables -s 10.4.13.0/24 -D OUTPUT -j NFQUEUE --queue-num 1";
 	log(logINFO) << command;
 	system( command.c_str() );
 
@@ -76,6 +76,9 @@ void Internet_Manager::handle_handshake(std::vector<uint8_t> message){
 
 			//grab the atk_gtw ip address
 			uint32_t gtw_ip = flow.get_gtw_ip_at(message[1]);
+
+			//add to shadow table
+			shadow_table->add_long_filter(flow);
 
 			//if the nonce is the one that this gateway sent
 			if(nonce == actual){

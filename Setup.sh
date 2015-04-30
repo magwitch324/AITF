@@ -22,3 +22,5 @@ sudo make install
 
 cd ../../Gateway
 make
+
+ifconfig

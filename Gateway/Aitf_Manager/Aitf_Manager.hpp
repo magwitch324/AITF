@@ -16,6 +16,7 @@ class Aitf_Manager : public Packet_Listener
 	private:
 		void run();
 		void timeout_run();
+		void send_message(uint32_t ip, std::vector<uint8_t> message);
 		void handle_filter_request(std::vector<uint8_t> message);
 		void handle_handshake_request(std::vector<uint8_t> message);
 		void handle_handshake_finish(std::vector<uint8_t> message);

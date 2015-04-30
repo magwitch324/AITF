@@ -1,5 +1,6 @@
 #include <boost/thread.hpp>
 #include <boost/date_time.hpp>
+#include <boost/asio.hpp>
 #include "../logger.hpp"
 #include "Aitf_Manager.hpp"
 #include "Udp_Server.hpp"
@@ -191,10 +192,28 @@ void Aitf_Manager::handle_handshake_request(std::vector<uint8_t> message){
 				memcpy(&reply[83], &message[87], 8);
 			}
 
-			//TODO: send the reply to the destination
+			//send the message
+			send_message(gtw_ip, reply);
 
 		}
 	}
+}
+
+void Aitf_Manager::send_message(uint32_t ip, std::vector<uint8_t> message){
+	
+	in_addr* addr = (in_addr*)(&ip);
+	//convert the internet address to a string
+	std::string ip_addr(inet_ntoa(*addr));
+	log(logDEBUG) << "Sending message to " << ip_addr;
+
+	//prepare the socket
+	boost::asio::ip::udp::resolver resolver(timeout_io);
+	boost::asio::ip::udp::socket socket(timeout_io);
+	boost::asio::ip::udp::resolver::query query(boost::asio::ip::udp::v4(), ip_addr,"50000");
+	boost::asio::ip::udp::endpoint receiver_endpoint = *resolver.resolve(query);
+
+	//send the message
+	socket.send_to(boost::asio::buffer(message), receiver_endpoint);
 }
 
 void Aitf_Manager::handle_filter_request(std::vector<uint8_t> message){
@@ -235,21 +254,23 @@ void Aitf_Manager::handle_filter_request(std::vector<uint8_t> message){
 				else{
 
 					//create a new flow with only the atk gtw
-					Flow ammended_flow;
-					ammended_flow.src_ip = flow.src_ip;
-					ammended_flow.gtw0_ip = flow.gtw0_ip;
-					ammended_flow.gtw0_rvalue = flow.gtw0_rvalue;
-					ammended_flow.dst_ip = flow.dst_ip;
-					ammended_flow.pointer = 0;
+					//MOVED TO THE RECEIVER
+					//Flow ammended_flow;
+					//ammended_flow.src_ip = flow.src_ip;
+					//ammended_flow.gtw0_ip = flow.gtw0_ip;
+					//ammended_flow.gtw0_rvalue = flow.gtw0_rvalue;
+					//ammended_flow.dst_ip = flow.dst_ip;
+					//ammended_flow.pointer = 0;
 
-					std::vector<uint8_t> handshake = create_handshake(ammended_flow, 0);
+					std::vector<uint8_t> handshake = create_handshake(flow, 0);
 
 					//Add filter for returning handshake with src as gtw0_ip
 					Flow handshake_flow(flow);
 					handshake_flow.src_ip = handshake_flow.gtw0_ip;
 					filter_table->add_temp_filter(handshake_flow);
-					//ammended_flow.gtw0_ip
-					//TODO: Send the handshake
+
+					//Send the handshake
+					send_message(flow.gtw0_ip, handshake);
 
 					//add callback to detect timedout handshakes
 					uint8_t escalation = message[message.size()-1];
@@ -278,7 +299,7 @@ void Aitf_Manager::deal_with_attacker(Flow flow, int request_attempts){
 			std::vector<uint8_t> message(flow.to_byte_vector());
 			message.insert(message.begin(), 4);
 			//contact host
-			//TODO CONTACT HOST!!!
+			send_message(flow.src_ip, message);
 			//send udp packet
 			boost::shared_ptr<boost::asio::deadline_timer> timer(new boost::asio::deadline_timer(timeout_io, boost::posix_time::seconds(TEMP_TIME)));
 			timer->async_wait(boost::bind(&Aitf_Manager::unresponsive_host, this, boost::asio::placeholders::error, timer, flow));
@@ -349,13 +370,24 @@ void Aitf_Manager::attempt_escalation(Flow flow, int attempts){
 		//construct the handshake
 		std::vector<uint8_t> handshake = create_handshake(flow, attempts);
 
-		//add filter for response
+		//Create filter for return handshake with only correct gateways
 		uint32_t dst_gtw_ip = flow.get_gtw_ip_at(attempts);
-		Flow handshake_flow(flow);
+		Flow handshake_flow;
+		//set the src and dst
 		handshake_flow.src_ip = dst_gtw_ip;
+		handshake_flow.dst_ip = flow.dst_ip;
+		for(int i = attempts, j = 0; i <= flow.pointer; i++, j++){
+			uint32_t ip = flow.get_gtw_ip_at(i);
+			uint64_t rvalue = flow.get_gtw_rvalue_at(i);
+			handshake_flow.set_gtw_ip_at(j, ip);
+			handshake_flow.set_gtw_rvalue_at(j, rvalue);
+			handshake_flow.pointer = j;
+		}
+
 		filter_table->add_temp_filter(handshake_flow);
 
-		//TODO SEND HANDSHAKE
+		//SEND HANDSHAKE
+		send_message(dst_gtw_ip, handshake);
 		//add callback for timedout connections
 		boost::shared_ptr<boost::asio::deadline_timer> timer(new boost::asio::deadline_timer(timeout_io, boost::posix_time::seconds(TEMP_TIME)));
 		timer->async_wait(boost::bind(&Aitf_Manager::unresponsive_gateway, this, boost::asio::placeholders::error, timer, flow, 1, attempts+1));
