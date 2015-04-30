@@ -16,12 +16,10 @@ class PolicyModule {
 	public:
 		PolicyModule();
 		~PolicyModule();
-		int receivedPacket(uint32_t source_ip, int size);
 		int receivedPacket(Flow flow, int size);
 	private:
 		std::unordered_map<uint32_t, int> defaults;
 		Async_Auto_Flow_Table * bandwidthUsage;
-		Async_Auto_Flow_Table * filterRequests;
 };
 
 #endif /* POLICYMODULE_HPP_ */

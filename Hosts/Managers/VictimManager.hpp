@@ -20,7 +20,7 @@ class VictimManager : public HostManager{
 	protected:
 		PolicyModule * policy;
 
-		void SendFilterRequest(Flow * flow, bool do_esc);
+		void SendFilterRequest(Flow * flow);
 };
 
 
