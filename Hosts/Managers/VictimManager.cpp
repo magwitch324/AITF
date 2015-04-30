@@ -55,8 +55,6 @@ void compute_ip_checksum(struct iphdr* iphdrp){
 int VictimManager::packetCallbackFunc(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg, struct nfq_data *nfad, void *data) {
 	llog(logINFO) << "Victim Received Packet";
 
-	u_int32_t id = getPktID(nfad);
-
 	struct nfqnl_msg_packet_hdr *ph;
 	int len;
 	unsigned char *ORIGINAL_DATA;
@@ -74,9 +72,8 @@ int VictimManager::packetCallbackFunc(struct nfq_q_handle *qh, struct nfgenmsg *
 		unsigned char modified_packet[len];
 		memcpy(&modified_packet[0], ORIGINAL_DATA, len);
 		Flow flow(std::vector<uint8_t>(&modified_packet[sizeof(*ipHeader)+1], &modified_packet[sizeof(*ipHeader)+1]+81));
-		int length = 0;
-
-		int val = policy->receivedPacket(flow, length);
+		
+		int val = policy->receivedPacket(flow, len-82);
 
 		if (val == -1) {
 			this->SendFilterRequest(&flow, false);
@@ -84,12 +81,18 @@ int VictimManager::packetCallbackFunc(struct nfq_q_handle *qh, struct nfgenmsg *
 			this->SendFilterRequest(&flow, true);
 		}
 
-		//if the packet is allowed on then reinsert the new flow and recompute checksum
-		memcpy(&modified_packet[sizeof(*ipHeader) + 1], &flow.to_byte_vector()[0], 82);
-		//compute the new checksum
-		compute_ip_checksum((struct iphdr*) &modified_packet[0]);
+		llog(logDEBUG) << "Destination is this gateway";
+		unsigned char actual_packet[len-82];
+		memcpy(&actual_packet[0], ORIGINAL_DATA, sizeof(*ipHeader));
+		memcpy(&actual_packet[sizeof(*ipHeader)], ORIGINAL_DATA + sizeof(*ipHeader) + 82, len - sizeof(*ipHeader) - 82);
+		((struct iphdr*) &actual_packet[0])->protocol = *((uint8_t*)ORIGINAL_DATA+sizeof(*ipHeader));
+		((struct iphdr*) &actual_packet[0])->tot_len = htons(len-82);
 
-		return nfq_set_verdict(qh, id, NF_ACCEPT, len, &modified_packet[0]);
+		//compute the new checksum
+		compute_ip_checksum((struct iphdr*) &actual_packet[0]);
+		llog(logDEBUG2) << std::hex << ((struct iphdr*) &actual_packet[0])->check;
+		return nfq_set_verdict(qh, id, NF_ACCEPT, len-82, &actual_packet[0]);
+
 	} else {
 
 		return nfq_set_verdict(qh, id, NF_ACCEPT, 0, NULL);

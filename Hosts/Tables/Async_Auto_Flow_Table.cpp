@@ -16,7 +16,7 @@ Async_Auto_Flow_Table::Async_Auto_Flow_Table(std::string filename, uint32_t time
 	fh.close();
 
 	print_timer = new boost::asio::deadline_timer(table_io, boost::posix_time::milliseconds(timeout));
-	print_timer->async_wait(boost::bind(&Async_Auto_Table::printStatus, this, boost::asio::placeholders::error, filename, timeout));
+	print_timer->async_wait(boost::bind(&Async_Auto_Flow_Table::printStatus, this, boost::asio::placeholders::error, filename, timeout));
 }
 
 Async_Auto_Flow_Table::~Async_Auto_Flow_Table() {
@@ -59,7 +59,7 @@ int Async_Auto_Flow_Table::addValue(Flow flow, int value, int max, uint32_t time
 	table_mutex.unlock();
 
 	boost::shared_ptr<boost::asio::deadline_timer> timer(new boost::asio::deadline_timer(table_io, boost::posix_time::seconds(1)));
-	timer->async_wait(boost::bind(&Async_Auto_Table::decrement, this, boost::asio::placeholders::error, timer, flow, value));
+	timer->async_wait(boost::bind(&Async_Auto_Flow_Table::decrement, this, boost::asio::placeholders::error, timer, flow, value));
 	return ret;
 }
 
@@ -80,6 +80,7 @@ void Async_Auto_Flow_Table::decrement(const boost::system::error_code& e, boost:
 
 void Async_Auto_Flow_Table::printStatus(const boost::system::error_code& e, std::string filename, uint32_t timeout) {
 
+	llog(logINFO) << "I am Printing";
 	if (e == boost::asio::error::operation_aborted) {
 		return;
 	}
@@ -99,6 +100,6 @@ void Async_Auto_Flow_Table::printStatus(const boost::system::error_code& e, std:
 	fh.close();
 
 	print_timer->expires_from_now(boost::posix_time::milliseconds(timeout));
-	print_timer->async_wait(boost::bind(&Async_Auto_Table::printStatus, this, boost::asio::placeholders::error, filename, timeout));
+	print_timer->async_wait(boost::bind(&Async_Auto_Flow_Table::printStatus, this, boost::asio::placeholders::error, filename, timeout));
 
 }
