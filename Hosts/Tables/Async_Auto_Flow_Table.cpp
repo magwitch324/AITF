@@ -57,6 +57,11 @@ int Async_Auto_Flow_Table::addValue(Flow flow, int value, int max, uint32_t time
 
 	table[flow] += value;
 
+	if (table[flow] > max) {
+		llog(logINFO) << "------------------------------------------------------------";
+		llog(logINFO) << "FOUND higher value - " << flow;
+		llog(logINFO) << "------------------------------------------------------------";
+	}
 	if ((max > 0) && (table[flow] > max) && ((table[flow] - value) <= max) )
 		ret = -1;
 	//llog(logINFO) << "++" << flow << "Added " << value << " to make " << table[flow];
