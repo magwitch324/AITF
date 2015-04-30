@@ -4,6 +4,7 @@
 #include "Internet_Manager.hpp"
 #include "../Hasher.hpp"
 #include "../logger.hpp"
+#include "../Helpers.hpp"
 
 Internet_Manager::Internet_Manager(){
 	std::string command = "iptables -s 10.4.13.0/24 -d 10.4.13.0/24 -A OUTPUT -j NFQUEUE --queue-num 1";
@@ -110,9 +111,8 @@ void Internet_Manager::handle_handshake(std::vector<uint8_t> message){
 
 void Internet_Manager::send_message(uint32_t ip, std::vector<uint8_t> message){
 	boost::asio::io_service io_service;
-	in_addr* addr = (in_addr*)(&ip);
-	//convert the internet address to a string
-	std::string ip_addr(inet_ntoa(*addr));
+
+	std::string ip_addr = Helpers::ip_to_string(ip);
 	log(logDEBUG) << "Sending message to " << ip_addr;
 
 	//prepare the socket

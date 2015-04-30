@@ -6,6 +6,7 @@
 #include "Udp_Server.hpp"
 #include "../Hasher.hpp"
 #include "../Constants.hpp"
+#include "../Helpers.hpp"
 
 #define DST_REQ_INDEX 78
 
@@ -103,19 +104,13 @@ void Aitf_Manager::handle_filter_reply(std::vector<uint8_t> message){
 		flow.gtw0_ip = MY_IP;
 		flow.gtw0_rvalue = Hasher::hash(*gateway_key, (unsigned char*) &flow.dst_ip, 4);
 
-		uint32_t ipINT = flow.src_ip;
-		in_addr* addr = (in_addr*)(&ipINT);
-		log(logERROR) << inet_ntoa(*addr);
+		log(logERROR) << Helpers::ip_to_string(flow.src_ip);
 
-		ipINT = flow.gtw0_ip;
-		addr = (in_addr*)(&ipINT);
-		log(logERROR) << inet_ntoa(*addr);
+		log(logERROR) << Helpers::ip_to_string(flow.gtw0_ip);
 
-		log(logERROR) << flow.gtw0_rvalue;
+		log(logERROR) << Helpers::ip_to_string(flow.gtw0_rvalue);
 
-		ipINT = flow.dst_ip;
-		addr = (in_addr*)(&ipINT);
-		log(logERROR) << inet_ntoa(*addr);
+		log(logERROR) << Helpers::ip_to_string(flow.dst_ip);
 
 		//if there was a filter request sent for this flow
 		if(filter_table->attempt_count(flow) > 0){
@@ -180,7 +175,7 @@ void Aitf_Manager::handle_handshake_request(std::vector<uint8_t> message){
 			uint64_t r_value = flow.get_gtw_rvalue_at(this_gtw_ptr);
 			uint32_t atk_gtw_ip = flow.get_gtw_ip_at(this_gtw_ptr);
 
-			log(logDEBUG) << "dst: " << flow.dst_ip << " atk_gtw_ip: " << atk_gtw_ip << " r_value: " << r_value;
+			log(logDEBUG) << "dst: " << Helpers::ip_to_string(flow.dst_ip) << " atk_gtw_ip: " << Helpers::ip_to_string(atk_gtw_ip) << " r_value: " << r_value;
 
 			//check that the random value in the flow is correct
 			//compute the hash
@@ -220,9 +215,9 @@ void Aitf_Manager::handle_handshake_request(std::vector<uint8_t> message){
 
 void Aitf_Manager::send_message(uint32_t ip, std::vector<uint8_t> message){
 	
-	in_addr* addr = (in_addr*)(&ip);
+	
 	//convert the internet address to a string
-	std::string ip_addr(inet_ntoa(*addr));
+	std::string ip_addr = Helpers::ip_to_string(ip);
 	log(logDEBUG) << "Sending message to " << ip_addr;
 
 	//prepare the socket
@@ -321,8 +316,8 @@ void Aitf_Manager::deal_with_attacker(Flow flow, int request_attempts){
 			memcpy(&message[1], &flow.dst_ip, 4);
 
 			uint32_t* ipINT = (uint32_t*) &message[1];
-			in_addr* addr = (in_addr*)(ipINT);
-			log(logERROR) << "sending this ip " << inet_ntoa(*addr);
+			
+			log(logERROR) << "sending this ip " << Helpers::ip_to_string(*ipINT);
 
 			//contact host
 			send_message(flow.src_ip, message);
@@ -358,19 +353,13 @@ std::vector<uint8_t> Aitf_Manager::create_handshake(Flow flow, int attempts){
 void Aitf_Manager::unresponsive_host(const boost::system::error_code& e, boost::shared_ptr<boost::asio::deadline_timer> timer, Flow flow){
 	log(logDEBUG2) << "_________________In unresponsive_host callback_________________";
 	
-		uint32_t ipINT = flow.src_ip;
-		in_addr* addr = (in_addr*)(&ipINT);
-		log(logERROR) << inet_ntoa(*addr);
+		log(logERROR) << Helpers::ip_to_string(flow.src_ip);
 
-		ipINT = flow.gtw0_ip;
-		addr = (in_addr*)(&ipINT);
-		log(logERROR) << inet_ntoa(*addr);
+		log(logERROR) << Helpers::ip_to_string(flow.gtw0_ip);
 
 		log(logERROR) << flow.gtw0_rvalue;
 
-		ipINT = flow.dst_ip;
-		addr = (in_addr*)(&ipINT);
-		log(logERROR) << inet_ntoa(*addr);
+		log(logERROR) << Helpers::ip_to_string(flow.dst_ip);
 	//if the flow has not been added to the table then cut off the client
 	if(shadow_table->attempt_count(flow) == 0){
 		log(logDEBUG2) << "HOST WAS UNRESPONSIVE";

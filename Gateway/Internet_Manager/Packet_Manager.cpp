@@ -7,6 +7,7 @@
 #include "../Constants.hpp"
 #include "../Hasher.hpp"
 #include "../logger.hpp"
+#include "../Helpers.hpp"
 
 Packet_Sniffer* Packet_Manager::listener = NULL;
 Packet_Manager::Packet_Manager(Packet_Sniffer* listener_in){
@@ -166,9 +167,7 @@ int Packet_Manager::packet_callback(struct nfq_q_handle *qh, struct nfgenmsg *nf
 			return nfq_set_verdict(qh, id, NF_DROP, 0, NULL);
 		}
 		for(int i = 0; i <= flow.pointer; i++){
-			uint32_t ipInt = flow.get_gtw_ip_at(i);
-			in_addr* addr = (in_addr*) &ipInt;
-			log(logERROR) << "gtw ip " << i << inet_ntoa(*addr);
+			log(logERROR) << "gtw ip " << i << Helpers::ip_to_string(flow.get_gtw_ip_at(i));
 		}
 
 		//if the packet is allowed on then reinsert the new flow and recompute checksum
