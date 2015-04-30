@@ -29,7 +29,7 @@ Flow::Flow(std::vector<uint8_t> new_flow){
 	memcpy(&dst_ip, &new_flow[77], 4);
 
 	if(pointer > 5){
-		log(logERROR) << "Flow pointer too big!!!";
+		llog(logERROR) << "Flow pointer too big!!!";
 		pointer = 0;
 		return;
 	}
@@ -204,3 +204,14 @@ bool Flow::operator==(const Flow &other) const
 		dst_ip == other.dst_ip;
 }
 
+std::ostream& operator<< (std::ostream& stream, const Flow& flow) {
+	stream << "(" << inet_ntoa((in_addr)flow.src_ip) << " -> "
+			<< inet_ntoa((in_addr)flow.gtw0_ip) << " -> "
+			<< inet_ntoa((in_addr)flow.gtw1_ip) << " -> "
+			<< inet_ntoa((in_addr)flow.gtw2_ip) << " -> "
+			<< inet_ntoa((in_addr)flow.gtw3_ip) << " -> "
+			<< inet_ntoa((in_addr)flow.gtw4_ip) << " -> "
+			<< inet_ntoa((in_addr)flow.gtw5_ip) << " -> "
+			<< inet_ntoa((in_addr)flow.dst_ip) << ")";
+	return stream;
+}

@@ -11,11 +11,11 @@
 
 PolicyModule::PolicyModule(){
 
-	bandwidthUsage = new Async_Auto_Table( "../hostBandwidth.log", 500);
-	//bandwidthUsage = new Async_Auto_Table();
+	bandwidthUsage = new Async_Auto_Flow_Table( "../hostBandwidth.log", 500);
+	//bandwidthUsage = new Async_Auto_Flow_Table();
 
-	//filterRequests = new Async_Auto_Table( "../filterRequests.log", 1000);
-	filterRequests = new Async_Auto_Table();
+	//filterRequests = new Async_Auto_Flow_Table( "../filterRequests.log", 1000);
+	filterRequests = new Async_Auto_Flow_Table();
 
 	defaults[inet_addr("10.4.13.128")] = 1000;
 	defaults[inet_addr("10.4.13.129")] = 1000;
@@ -160,28 +160,29 @@ PolicyModule::~PolicyModule() {
 }
 /*
  * receivedPacket: determines what should happen based on the source ip and the size of the packet
- * 	input: 	source_ip - the ip that is going to be cataloged
+ * 	input: 	flow - the flow that is going to be cataloged
  * 			size - the size of the packet that was received
  * 	output: size - everything works out and nothing should be done
  * 			-1 - the source exceeded it's limit for the first time
- * 			-2 - the source exceeded it's limit for within t_long time meaning some form of escelation should take place
+ * 			-2 - the source exceeded it's limit for within t_long time meaning some form of escalation should take place
  */
-int PolicyModule::receivedPacket(uint32_t source_ip, int size){
+int PolicyModule::receivedPacket(Flow flow, int size){
 	int max = 0, bwu_ret;
-	if (defaults.count(source_ip) > 0) {
-		max = defaults[source_ip];
+
+	if (defaults.count(flow.src_ip) > 0) {
+		max = defaults[flow.src_ip];
 	} else {
 		max = -1;
 	}
 
-	bwu_ret = bandwidthUsage->addValue(source_ip, size, max, 1000);
+	bwu_ret = bandwidthUsage->addValue(flow, size, max, 1000);
 
 	if (bwu_ret < 0) {
-		if(filterRequests->getValue(source_ip) > 0) {
+		if(filterRequests->getValue(flow) > 0) {
 			bwu_ret = -2;
 		}
 
-		filterRequests->addValue(source_ip, 1, -1, 10*60*1000);//TLONG);
+		filterRequests->addValue(flow, 1, -1, 10*60*1000);//TODO:TLONG);
 	}
 
 	return bwu_ret;

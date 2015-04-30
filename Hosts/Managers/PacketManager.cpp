@@ -13,11 +13,11 @@ PacketManager::PacketManager(uint32_t a_ip, int input_queue_num, int output_queu
 	nfq_bind_pf(this->my_netfilterqueue_handle, AF_INET);
 
 	this->victim_manager = new VictimManager(this->my_netfilterqueue_handle, input_queue_num, policy);
-	this->attack_manager = new AttackManager(this->my_netfilterqueue_handle, output_queue_num, filter);
+	this->attack_manager = new AttackManager(a_ip, this->my_netfilterqueue_handle, output_queue_num, filter);
 
 	Udp_Server * udps;
 	udps = udps->getInstance();
-	udps->registerIP(ip, this);
+	udps->registerIP(a_ip, this);
 }
 
 
@@ -30,11 +30,11 @@ PacketManager::~PacketManager(void) {
 }
 
 void PacketManager::aitfCommunication(std::vector<uint8_t> recv_buf) {
-	log(logDEBUG2) << "Checking message type";
+	llog(logDEBUG2) << "Checking message type";
 
 		//extract the type of message
 	uint8_t msg_type = recv_buf[0];
-	log(logDEBUG) << "Message type: " << (int) msg_type;
+	llog(logDEBUG) << "Message type: " << (int) msg_type;
 
 	switch(msg_type){
 		case 0: //Filter request
@@ -50,13 +50,15 @@ void PacketManager::aitfCommunication(std::vector<uint8_t> recv_buf) {
 			//We should never receive one of these
 			break;
 		case 4: //Attack filter request
-			//TODO: Add to filter and send response
+			uint32_t ip = 0;
+			memcpy(&ip, &recv_buf[1], 4);
+			attack_manager->addFilter(ip, 10*60*1000); //TODO: TLONG
 			break;
 		case 5: //Filter request reply
 			//We should never receive one of these
 			break;
 		default:
-			log(logWARNING) << "Invalid message type";
+			llog(logWARNING) << "Invalid message type";
 			break;
 	}
 }

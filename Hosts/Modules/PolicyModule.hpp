@@ -9,6 +9,7 @@
 #define POLICYMODULE_HPP
 
 #include "../Tables/Async_Auto_Table.hpp"
+#include "../Tables/Async_Auto_Flow_Table.hpp"
 #include "../Flow.hpp"
 
 class PolicyModule {
@@ -19,10 +20,8 @@ class PolicyModule {
 		int receivedPacket(Flow flow, int size);
 	private:
 		std::unordered_map<uint32_t, int> defaults;
-		uint32_t strToIP(const char * str_ip);
-		Async_Auto_Table * bandwidthUsage;
-		Async_Auto_Table * filterRequests;
-		std::unordered_map<Flow, int, KeyHasher> flow_filters;
+		Async_Auto_Flow_Table * bandwidthUsage;
+		Async_Auto_Flow_Table * filterRequests;
 };
 
 #endif /* POLICYMODULE_HPP_ */

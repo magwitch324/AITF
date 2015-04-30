@@ -25,7 +25,7 @@ static Udp_Server * Udp_Server::getInstance() {
 
 //Starts the udp server.
 void Udp_Server::start(){
-	log(logINFO) << "Starting udp server";
+	llog(logINFO) << "Starting udp server";
 
 	//create the socket
 	udp::socket test(udp_io, udp::endpoint(udp::v4(), 50000));
@@ -40,9 +40,9 @@ void Udp_Server::start(){
 
 //stops the udp server.
 void Udp_Server::stop(){
-	log(logINFO) << "Stopping udp server";
+	llog(logINFO) << "Stopping udp server";
 	udp_io.stop();
-	log(logINFO) << "Udp server stopped";
+	llog(logINFO) << "Udp server stopped";
 }
 
 //async listens for udp packets

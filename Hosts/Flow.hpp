@@ -42,6 +42,8 @@ class Flow {
 		uint32_t dst_ip = 0;
 };
 
+std::ostream& operator<< (std::ostream&, const Flow&);
+
 struct KeyHasher{
 	std::size_t operator() (const Flow& flow) const{
 		std::size_t seed = 0;
