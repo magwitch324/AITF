@@ -96,7 +96,6 @@ void Async_Auto_Flow_Table::printStatus(const boost::system::error_code& e, std:
 
 	for ( auto iter = table.begin(); iter != table.end(); ++ iter ) {
 		fh << "," << iter->first << "," << iter->second;
-		llog(logINFO) << "," << iter->first << "," << iter->second;
 	}
 	table_mutex.unlock();
 
