@@ -50,12 +50,9 @@ int main(int argc, char **argv){
 	udps = udps->getInstance();
 
 	for ( i = 1; i < argc; i ++ ) {
-		printf ("sudo iptables -D INPUT -d %s -j NFQUEUE --queue-num %u \n", argv[i], i*2+1);
-		printf ("sudo iptables -D OUTPUT -s %s -j NFQUEUE --queue-num %u \n", argv[i], i*2+2);
-
-		sprintf( command, "iptables -A INPUT -d %s -j NFQUEUE --queue-num %u", argv[i], i*2+1 );
+		sprintf( command, "iptables -A INPUT -d %s -s 10.4.13.0/24 -j NFQUEUE --queue-num %u", argv[i], i*2+1 );
 		system( command );
-		sprintf( command, "iptables -A OUTPUT -s %s -j NFQUEUE --queue-num %u", argv[i], i*2+2 );
+		sprintf( command, "iptables -A OUTPUT -s %s -d 10.4.13.0/24 -j NFQUEUE --queue-num %u", argv[i], i*2+2 );
 		system( command );
 		pms[i-1] = new PacketManager( inet_addr(argv[i]), i*2+1, i*2+2, policy, filter);
 	}
@@ -69,9 +66,9 @@ int main(int argc, char **argv){
 
 	for ( i = 1; i < argc; i ++ ) {
 		delete pms[i-1];
-		sprintf( command, "iptables -D OUTPUT -s %s -j NFQUEUE --queue-num %u", argv[i], i*2+2 );
+		sprintf( command, "iptables -D OUTPUT -s %s -d 10.4.13.0/24 -j NFQUEUE --queue-num %u", argv[i], i*2+2 );
 		system( command );
-		sprintf( command, "iptables -D INPUT -d %s -j NFQUEUE --queue-num %u", argv[i], i*2+1 );
+		sprintf( command, "iptables -D INPUT -d %s -s 10.4.13.0/24 -j NFQUEUE --queue-num %u", argv[i], i*2+1 );
 		system( command );
 	}
 

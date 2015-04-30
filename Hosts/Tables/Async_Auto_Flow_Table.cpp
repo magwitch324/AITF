@@ -85,7 +85,6 @@ void Async_Auto_Flow_Table::decrement(const boost::system::error_code& e, boost:
 
 void Async_Auto_Flow_Table::printStatus(const boost::system::error_code& e, std::string filename, uint32_t timeout) {
 
-	llog(logINFO) << "I am Printing flow table";
 	if (e == boost::asio::error::operation_aborted) {
 		return;
 	}

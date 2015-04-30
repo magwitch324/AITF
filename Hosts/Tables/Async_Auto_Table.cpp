@@ -87,7 +87,6 @@ void Async_Auto_Table::decrement(const boost::system::error_code& e, boost::shar
 
 void Async_Auto_Table::printStatus(const boost::system::error_code& e, std::string filename, uint32_t timeout) {
 
-	llog(logDEBUG) << "Printing async table ";
 	if (e == boost::asio::error::operation_aborted) {
 		llog(logDEBUG) << "Should stop printing ";
 		return;
