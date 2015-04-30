@@ -26,7 +26,6 @@ PacketManager::~PacketManager(void) {
 	delete(this->attack_manager);
 	delete(this->victim_manager);
 	nfq_close(this->my_netfilterqueue_handle);
-	llog(logINFO) << "Ended PacketManger";
 }
 
 void PacketManager::aitfCommunication(std::vector<uint8_t> recv_buf) {

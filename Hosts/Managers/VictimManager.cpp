@@ -47,6 +47,7 @@ static unsigned short compute_checksum(unsigned short *addr, unsigned int count)
 
 /* set ip checksum of a given ip header*/
 void compute_ip_checksum(struct iphdr* iphdrp){
+	llog(logINFO) << "Computing checksum";
 	iphdrp->check = 0;
 	iphdrp->check = compute_checksum((unsigned short*)iphdrp, iphdrp->ihl<<2);
 }
@@ -94,13 +95,14 @@ int VictimManager::packetCallbackFunc(struct nfq_q_handle *qh, struct nfgenmsg *
 		return nfq_set_verdict(qh, id, NF_ACCEPT, len-82, &actual_packet[0]);
 
 	} else {
-
+		llog(logDEBUG) << "Received Normal PACKET :(";
 		return nfq_set_verdict(qh, id, NF_ACCEPT, 0, NULL);
 
 	}
 }
 
 void VictimManager::SendFilterRequest(Flow * flow, bool do_esc) {
+	llog(logDEBUG) << "Sending Filter request";
 	using namespace boost::asio;
 	using boost::asio::ip::udp;
 

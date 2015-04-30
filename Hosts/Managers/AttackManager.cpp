@@ -9,12 +9,13 @@
 #include <boost/bind.hpp>
 
 AttackManager::AttackManager(uint32_t ip, struct nfq_handle * a_nfq_handle, int attack_queue_num, FilterModule * fil) : HostManager(a_nfq_handle, attack_queue_num)  {
-	llog(logINFO) << "Starting AttackManager";
+	llog(logINFO) << "Starting AttackManager - " << ip;
 	filter = fil;
 	my_ip = ip;
 }
 
 AttackManager::~AttackManager(void)  {
+	llog(logINFO) << "Destroying AttackManager - " << my_ip;
 	state.store(this->ENDING, boost::memory_order_relaxed);
 	packet_thread->interrupt();
 	packet_thread->join();
@@ -25,7 +26,7 @@ int AttackManager::packetCallbackFunc(struct nfq_q_handle *qh, struct nfgenmsg *
 	unsigned char * buffer;
 	uint32_t destination_ip = 0;
 
-	llog(logINFO) << "Attack Received Packet";
+	llog(logINFO) << "Attack Sent Packet";
 	u_int32_t id = getPktID(nfad);
 
 	nfq_get_payload(nfad, &buffer);
@@ -39,6 +40,7 @@ int AttackManager::packetCallbackFunc(struct nfq_q_handle *qh, struct nfgenmsg *
 }
 
 void AttackManager::addFilter(uint32_t dest, int timeout) {
+	llog(logINFO) << "Attack got request to add filter Packet";
 	//TODO add check for already existing request
 	filter->addNewFilter(dest, timeout);
 	this->sendFilterResponse(dest);
@@ -46,6 +48,7 @@ void AttackManager::addFilter(uint32_t dest, int timeout) {
 
 
 void AttackManager::sendFilterResponse(uint32_t dest) {
+	llog(logINFO) << "Attack is sending reply to attack";
 	using namespace boost::asio;
 	using boost::asio::ip::udp;
 

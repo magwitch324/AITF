@@ -19,6 +19,7 @@ u_int32_t HostManager::getPktID (struct nfq_data *tb) {
 
 HostManager::HostManager(struct nfq_handle * a_nfq_handle, int queue_num) {
 
+	llog(logINFO) << "Starting a host manager";
 	state.store(STARTING, boost::memory_order_relaxed);
 
 	queue_handle = nfq_create_queue(a_nfq_handle, queue_num, &callbackForward, this);
@@ -33,6 +34,7 @@ HostManager::HostManager(struct nfq_handle * a_nfq_handle, int queue_num) {
 
 
 void HostManager::packetRecieveThreadFunc(struct nfq_handle * a_nfq_handle) {
+	llog(logINFO) << "a Host Manager Received a packet";
 	int fd;
 	int rv;
 	char buf[4096] __attribute__ ((aligned));

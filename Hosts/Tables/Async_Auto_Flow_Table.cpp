@@ -5,11 +5,13 @@
 #include "../logger.hpp"
 
 Async_Auto_Flow_Table::Async_Auto_Flow_Table() {
+	llog(logDEBUG) << "I am creating normal flow table ";
 	print_timer = NULL;
 }
 
 Async_Auto_Flow_Table::Async_Auto_Flow_Table(std::string filename, uint32_t timeout) {
 
+	llog(logDEBUG) << "I am creating printable flow table " << filename;
 	std::ofstream fh;
 	fh.open(filename, std::ios::out);
 	fh << "\n";
@@ -20,7 +22,7 @@ Async_Auto_Flow_Table::Async_Auto_Flow_Table(std::string filename, uint32_t time
 }
 
 Async_Auto_Flow_Table::~Async_Auto_Flow_Table() {
-
+	llog(logDEBUG) << "Destory this flow table";
 	if (print_timer) {
 		print_timer->cancel();
 		delete(print_timer);
@@ -29,6 +31,7 @@ Async_Auto_Flow_Table::~Async_Auto_Flow_Table() {
 }
 
 int Async_Auto_Flow_Table::getValue(Flow flow) {
+	llog(logDEBUG) << "get value from flow table " << flow;
 	int value = -1;
 	table_mutex.lock();
 	if (table.count(flow) > 0) {
@@ -48,6 +51,7 @@ int Async_Auto_Flow_Table::getValue(Flow flow) {
  *	output: the given value or -1 if the max was surpassed with the new value added and not already surpassed
  */
 int Async_Auto_Flow_Table::addValue(Flow flow, int value, int max, uint32_t timeout) {
+	llog(logDEBUG) << "adding " << value << " to " << flow;
 	int ret = value;
 	table_mutex.lock();
 
@@ -65,6 +69,7 @@ int Async_Auto_Flow_Table::addValue(Flow flow, int value, int max, uint32_t time
 
 
 void Async_Auto_Flow_Table::decrement(const boost::system::error_code& e, boost::shared_ptr<boost::asio::deadline_timer> timer, Flow flow, int value) {
+	llog(logDEBUG) << "removing " << value << " to " << flow;	
 	timer.reset();
 
 	table_mutex.lock();
@@ -80,7 +85,7 @@ void Async_Auto_Flow_Table::decrement(const boost::system::error_code& e, boost:
 
 void Async_Auto_Flow_Table::printStatus(const boost::system::error_code& e, std::string filename, uint32_t timeout) {
 
-	llog(logINFO) << "I am Printing";
+	llog(logINFO) << "I am Printing flow table";
 	if (e == boost::asio::error::operation_aborted) {
 		return;
 	}

@@ -7,6 +7,7 @@ using namespace boost::asio;
 using boost::asio::ip::udp;
 
 bool Udp_Server::registerIP(uint32_t ip, PacketManager * pm) {
+	llog(logDEBUG) << "Registering " << ip;
 	if(reg_listens.count(ip) > 0) {
 		return false;
 	}
@@ -17,15 +18,15 @@ bool Udp_Server::registerIP(uint32_t ip, PacketManager * pm) {
 }
 
 Udp_Server * Udp_Server::getInstance() {
-   if(!udpserver){
-
-	   udpserver=new Udp_Server();
+	llog(logDEBUG) << "Getting instance of server";
+	if(!udpserver){
+		udpserver=new Udp_Server();
 	}
 	return udpserver;
 }
 
 Udp_Server::Udp_Server() {
-
+	llog(logDEBUG) << "Creating server instance";
 }
 
 //Starts the udp server.

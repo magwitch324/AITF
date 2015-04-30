@@ -5,10 +5,13 @@
 #include "../logger.hpp"
 
 Async_Auto_Table::Async_Auto_Table() {
+	llog(logDEBUG) << "I am creating normal int table " ;
 	print_timer = NULL;
 }
 
 Async_Auto_Table::Async_Auto_Table(std::string filename, uint32_t timeout) {
+
+	llog(logDEBUG) << "I am creating printable int table " << filename;
 
 	std::ofstream fh;
 	fh.open(filename, std::ios::out);
@@ -20,6 +23,8 @@ Async_Auto_Table::Async_Auto_Table(std::string filename, uint32_t timeout) {
 }
 
 Async_Auto_Table::~Async_Auto_Table() {
+	
+	llog(logDEBUG) << "I am deleteing int table" ;
 
 	if (print_timer) {
 		print_timer->cancel();
@@ -29,6 +34,7 @@ Async_Auto_Table::~Async_Auto_Table() {
 }
 
 int Async_Auto_Table::getValue(uint32_t ip) {
+	llog(logDEBUG) << "get value from flow table " << ip;
 	int value = -1;
 	table_mutex.lock();
 	if (table.count(ip) > 0) {
@@ -36,22 +42,6 @@ int Async_Auto_Table::getValue(uint32_t ip) {
 	}
 	table_mutex.unlock();
 	return value;
-}
-
-int Async_Auto_Table::compareValue(uint32_t ip, int value) {
-	int ret = 0;
-	table_mutex.lock();
-	if (table.count(ip) < 1) {
-		ret = -2;
-	} else if (table[ip] > value) {
-		ret = 1;
-	} else if (table[ip] < value) {
-		ret = -1;
-	} else {
-		ret = 0;
-	}
-	table_mutex.unlock();
-	return ret;
 }
 
 /*
@@ -63,6 +53,7 @@ int Async_Auto_Table::compareValue(uint32_t ip, int value) {
  *	output: the given value or -1 if the max was surpassed with the new value added and not already surpassed
  */
 int Async_Auto_Table::addValue(uint32_t ip, int value, int max, uint32_t timeout) {
+	llog(logDEBUG) << "adding " << value << " to " << ip;
 	int ret = value;
 	table_mutex.lock();
 
@@ -80,6 +71,7 @@ int Async_Auto_Table::addValue(uint32_t ip, int value, int max, uint32_t timeout
 
 
 void Async_Auto_Table::decrement(const boost::system::error_code& e, boost::shared_ptr<boost::asio::deadline_timer> timer, uint32_t ip, int value) {
+	llog(logDEBUG) << "removing " << value << " to " << ip;
 	timer.reset();
 
 	table_mutex.lock();
@@ -95,6 +87,7 @@ void Async_Auto_Table::decrement(const boost::system::error_code& e, boost::shar
 
 void Async_Auto_Table::printStatus(const boost::system::error_code& e, std::string filename, uint32_t timeout) {
 
+	llog(logDEBUG) << "Printing async table ";
 	if (e == boost::asio::error::operation_aborted) {
 		return;
 	}

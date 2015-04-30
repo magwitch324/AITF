@@ -7,9 +7,11 @@
  #include <arpa/inet.h>
 
 #include "PolicyModule.hpp"
+#include "../logger.hpp"
 
 
 PolicyModule::PolicyModule(){
+	llog(logDEBUG) << "Creating policy module";
 
 	bandwidthUsage = new Async_Auto_Flow_Table( "../hostBandwidth.log", 500);
 	//bandwidthUsage = new Async_Auto_Flow_Table();
@@ -153,6 +155,7 @@ PolicyModule::PolicyModule(){
 
 
 PolicyModule::~PolicyModule() {
+	llog(logDEBUG) << "Destroying policy module";
 	bandwidthUsage->stop_thread();
 	filterRequests->stop_thread();
 	delete bandwidthUsage;
@@ -167,6 +170,7 @@ PolicyModule::~PolicyModule() {
  * 			-2 - the source exceeded it's limit for within t_long time meaning some form of escalation should take place
  */
 int PolicyModule::receivedPacket(Flow flow, int size){
+	llog(logDEBUG) << "I received a packet from " << flow;
 	int max = 0, bwu_ret;
 
 	if (defaults.count(flow.src_ip) > 0) {
