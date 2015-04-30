@@ -89,7 +89,9 @@ int VictimManager::packetCallbackFunc(struct nfq_q_handle *qh, struct nfgenmsg *
 		int val = policy->receivedPacket(flow, len-82);
 		llog(logERROR) << "RETURN VALUE: " << val;
 
-		this->SendFilterRequest(&flow);
+		if(val < 0) {
+			this->SendFilterRequest(&flow);
+		}
 
 		llog(logDEBUG) << "Destination is this gateway";
 		unsigned char actual_packet[len-82];
@@ -111,7 +113,7 @@ int VictimManager::packetCallbackFunc(struct nfq_q_handle *qh, struct nfgenmsg *
 }
 
 void VictimManager::SendFilterRequest(Flow * flow) {
-	llog(logDEBUG) << "Sending Filter request";
+	llog(logDEBUG) << "Sending Filter request - gtwy r" << flow->gtw0_rvalue;
 	using namespace boost::asio;
 	using boost::asio::ip::udp;
 

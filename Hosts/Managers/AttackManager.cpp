@@ -55,7 +55,7 @@ void AttackManager::sendFilterResponse(uint32_t dest) {
 
 	boost::asio::io_service io_service;
 	udp::resolver resolver(io_service);
-	udp::resolver::query query(udp::v4(),"10.4.13.4","50000"); //TODO: change query string
+	udp::resolver::query query(udp::v4(),"10.4.13.1","50000"); //TODO: change query string
 	udp::endpoint receiver_endpoint = *resolver.resolve(query);
 
 	udp::socket socket(io_service);
