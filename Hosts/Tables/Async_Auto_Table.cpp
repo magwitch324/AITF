@@ -64,7 +64,7 @@ int Async_Auto_Table::addValue(uint32_t ip, int value, int max, uint32_t timeout
 	//llog(logINFO) << "++" << ip << "Added " << value << " to make " << table[ip];
 	table_mutex.unlock();
 
-	boost::shared_ptr<boost::asio::deadline_timer> timer(new boost::asio::deadline_timer(table_io, boost::posix_time::seconds(1)));
+	boost::shared_ptr<boost::asio::deadline_timer> timer(new boost::asio::deadline_timer(table_io, boost::posix_time::milliseconds(timeout)));
 	timer->async_wait(boost::bind(&Async_Auto_Table::decrement, this, boost::asio::placeholders::error, timer, ip, value));
 	return ret;
 }

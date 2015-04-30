@@ -51,7 +51,7 @@ void PacketManager::aitfCommunication(std::vector<uint8_t> recv_buf) {
 			break;
 		case 4: //Attack filter request
 			memcpy(&t_ip, &recv_buf[1], 4);
-			attack_manager->addFilter(t_ip, 10*60*1000); //TODO: TLONG
+			attack_manager->addFilter(t_ip, 30*1000);//10*60*1000); //TODO: TLONG
 			break;
 		case 5: //Filter request reply
 			//We should never receive one of these

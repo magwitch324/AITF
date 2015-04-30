@@ -11,12 +11,14 @@
 FilterModule::FilterModule() {
 	llog(logDEBUG) << "Creating filter module";
 	activeFilters = new Async_Auto_Table( "../activeFilters.log", 1000);
+	activeFilters->start_thread();
 	//activeFilters = new Async_Auto_Table();
 
 }
 
 FilterModule::~FilterModule() {
 	llog(logDEBUG) << "Deleting filter module";
+	activeFilters->stop_thread();
 	delete activeFilters;
 }
 

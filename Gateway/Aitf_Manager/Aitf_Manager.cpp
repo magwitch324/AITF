@@ -103,10 +103,28 @@ void Aitf_Manager::handle_filter_reply(std::vector<uint8_t> message){
 		flow.gtw0_ip = MY_IP;
 		flow.gtw0_rvalue = Hasher::hash(*gateway_key, (unsigned char*) &flow.dst_ip, 4);
 
+		uint32_t ipINT = flow.src_ip;
+		in_addr* addr = (in_addr*)(&ipINT);
+		log(logERROR) << inet_ntoa(*addr);
+
+		ipINT = flow.gtw0_ip;
+		addr = (in_addr*)(&ipINT);
+		log(logERROR) << inet_ntoa(*addr);
+
+		log(logERROR) << flow.gtw0_rvalue;
+
+		ipINT = flow.dst_ip;
+		addr = (in_addr*)(&ipINT);
+		log(logERROR) << inet_ntoa(*addr);
+
 		//if there was a filter request sent for this flow
 		if(filter_table->attempt_count(flow) > 0){
+			log(logDEBUG2) << "Successfully replied to request to stop";
 			//add to the shadow table
 			shadow_table->add_long_filter(flow);
+		}
+		else{
+			log(logDEBUG2) << "UNKNOWN FLOW";
 		}
 	}
 }
@@ -298,8 +316,14 @@ void Aitf_Manager::deal_with_attacker(Flow flow, int request_attempts){
 			filter_table->add_long_filter(flow);
 		}
 		else{
-			std::vector<uint8_t> message(flow.to_byte_vector());
-			message.insert(message.begin(), 4);
+			std::vector<uint8_t> message(5);
+			message[0] = 4;
+			memcpy(&message[1], &flow.dst_ip, 4);
+
+			uint32_t* ipINT = (uint32_t*) &message[1];
+			in_addr* addr = (in_addr*)(ipINT);
+			log(logERROR) << "sending this ip " << inet_ntoa(*addr);
+
 			//contact host
 			send_message(flow.src_ip, message);
 			//send udp packet
@@ -333,10 +357,27 @@ std::vector<uint8_t> Aitf_Manager::create_handshake(Flow flow, int attempts){
 
 void Aitf_Manager::unresponsive_host(const boost::system::error_code& e, boost::shared_ptr<boost::asio::deadline_timer> timer, Flow flow){
 	log(logDEBUG2) << "_________________In unresponsive_host callback_________________";
+	
+		uint32_t ipINT = flow.src_ip;
+		in_addr* addr = (in_addr*)(&ipINT);
+		log(logERROR) << inet_ntoa(*addr);
 
+		ipINT = flow.gtw0_ip;
+		addr = (in_addr*)(&ipINT);
+		log(logERROR) << inet_ntoa(*addr);
+
+		log(logERROR) << flow.gtw0_rvalue;
+
+		ipINT = flow.dst_ip;
+		addr = (in_addr*)(&ipINT);
+		log(logERROR) << inet_ntoa(*addr);
 	//if the flow has not been added to the table then cut off the client
 	if(shadow_table->attempt_count(flow) == 0){
+		log(logDEBUG2) << "HOST WAS UNRESPONSIVE";
 		filter_table->add_long_filter(flow);
+	}
+	else{
+		log(logDEBUG2) << "HOST WAS RESPONSIVE";
 	}
 
 }

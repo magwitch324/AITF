@@ -1,7 +1,8 @@
 /*
  * ExitManager.cpp
  */
-
+#include <netinet/ip.h>
+#include <arpa/inet.h>
 #include "AttackManager.hpp"
 #include "../logger.hpp"
 
@@ -65,6 +66,14 @@ void AttackManager::sendFilterResponse(uint32_t dest) {
 	message[0] = 5;
 	memcpy(&message[1], &my_ip, 4);
 	memcpy(&message[5], &dest, 4);
+
+	uint32_t ipINT = dest;
+	in_addr* addr = (in_addr*)(&ipINT);
+	llog(logERROR) << "The dest here is: " << inet_ntoa(*addr);
+
+	ipINT = my_ip;
+	addr = (in_addr*)(&ipINT);
+	llog(logERROR) << "The src here is: " << inet_ntoa(*addr);
 
 	socket.send_to(boost::asio::buffer(message), receiver_endpoint);
 }

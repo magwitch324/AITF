@@ -11,7 +11,7 @@
 #include <boost/shared_ptr.hpp>
 #include "../Flow.hpp"
 
-#define TEMP_TIME 1
+#define TEMP_TIME 2
 #define LONG_TIME 10
 
 

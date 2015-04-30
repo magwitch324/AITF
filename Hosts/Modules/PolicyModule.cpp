@@ -20,6 +20,7 @@ PolicyModule::PolicyModule(){
 	filterRequests = new Async_Auto_Flow_Table();
 
 	defaults[inet_addr("10.4.13.5")] = 1000;
+	defaults[inet_addr("10.4.13.3")] = 1000;
 	defaults[inet_addr("10.4.13.128")] = 1000;
 	defaults[inet_addr("10.4.13.129")] = 1000;
 	defaults[inet_addr("10.4.13.130")] = 1000;
