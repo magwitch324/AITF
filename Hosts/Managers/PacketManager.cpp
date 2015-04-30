@@ -35,6 +35,7 @@ void PacketManager::aitfCommunication(std::vector<uint8_t> recv_buf) {
 		//extract the type of message
 	uint8_t msg_type = recv_buf[0];
 	llog(logDEBUG) << "Message type: " << (int) msg_type;
+	uint32_t t_ip = 0;
 
 	switch(msg_type){
 		case 0: //Filter request
@@ -50,9 +51,8 @@ void PacketManager::aitfCommunication(std::vector<uint8_t> recv_buf) {
 			//We should never receive one of these
 			break;
 		case 4: //Attack filter request
-			uint32_t ip = 0;
-			memcpy(&ip, &recv_buf[1], 4);
-			attack_manager->addFilter(ip, 10*60*1000); //TODO: TLONG
+			memcpy(&t_ip, &recv_buf[1], 4);
+			attack_manager->addFilter(t_ip, 10*60*1000); //TODO: TLONG
 			break;
 		case 5: //Filter request reply
 			//We should never receive one of these

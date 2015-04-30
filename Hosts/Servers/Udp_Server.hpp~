@@ -27,6 +27,7 @@ class Udp_Server{
 		std::unordered_map<uint32_t, PacketManager *> reg_listens;
 
 		static Udp_Server * udpserver;
+
 };
 
 #endif

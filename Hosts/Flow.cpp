@@ -1,4 +1,8 @@
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
 #include "Flow.hpp"
+
 
 Flow::Flow(){
 
@@ -205,13 +209,13 @@ bool Flow::operator==(const Flow &other) const
 }
 
 std::ostream& operator<< (std::ostream& stream, const Flow& flow) {
-	stream << "(" << inet_ntoa((in_addr)flow.src_ip) << " -> "
-			<< inet_ntoa((in_addr)flow.gtw0_ip) << " -> "
-			<< inet_ntoa((in_addr)flow.gtw1_ip) << " -> "
-			<< inet_ntoa((in_addr)flow.gtw2_ip) << " -> "
-			<< inet_ntoa((in_addr)flow.gtw3_ip) << " -> "
-			<< inet_ntoa((in_addr)flow.gtw4_ip) << " -> "
-			<< inet_ntoa((in_addr)flow.gtw5_ip) << " -> "
-			<< inet_ntoa((in_addr)flow.dst_ip) << ")";
+	stream << "(" << inet_ntoa(*((in_addr*)&(flow.src_ip))) << " -> "
+			<< inet_ntoa(*((in_addr*)&(flow.gtw0_ip))) << " -> "
+			<< inet_ntoa(*((in_addr*)&(flow.gtw1_ip))) << " -> "
+			<< inet_ntoa(*((in_addr*)&(flow.gtw2_ip))) << " -> "
+			<< inet_ntoa(*((in_addr*)&(flow.gtw3_ip))) << " -> "
+			<< inet_ntoa(*((in_addr*)&(flow.gtw4_ip))) << " -> "
+			<< inet_ntoa(*((in_addr*)&(flow.gtw5_ip))) << " -> "
+			<< inet_ntoa(*((in_addr*)&(flow.dst_ip))) << ")";
 	return stream;
 }

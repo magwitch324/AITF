@@ -23,11 +23,8 @@ Udp_Server * Udp_Server::getInstance() {
 	}
 	return udpserver;
 }
-
 Udp_Server::Udp_Server() {
-
-}
-
+};
 //Starts the udp server.
 void Udp_Server::start(){
 	llog(logINFO) << "Starting udp server";

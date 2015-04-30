@@ -10,6 +10,7 @@
 #include "Managers/PacketManager.hpp"
 #include "Modules/FilterModule.hpp"
 #include "Modules/PolicyModule.hpp"
+#include "Servers/Udp_Server.hpp"
 
 loglevel_e loglevel = logERROR;
 
@@ -43,7 +44,9 @@ int main(int argc, char **argv){
 	udps = udps->getInstance();
 
 	for ( i = 1; i < argc; i ++ ) {
-		printf ("iptables -A INPUT -s %s -j NFQUEUE --queue-num %u \n", argv[i], i*2+1);
+		printf ("sudo iptables -D INPUT -d %s -j NFQUEUE --queue-num %u \n", argv[i], i*2+1);
+		printf ("sudo iptables -D OUTPUT -s %s -j NFQUEUE --queue-num %u \n", argv[i], i*2+2);
+
 		sprintf( command, "iptables -A INPUT -d %s -j NFQUEUE --queue-num %u", argv[i], i*2+1 );
 		system( command );
 		sprintf( command, "iptables -A OUTPUT -s %s -j NFQUEUE --queue-num %u", argv[i], i*2+2 );

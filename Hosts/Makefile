@@ -1,4 +1,4 @@
-SOURCE = ./Managers/*.cpp ./Modules/*.cpp ./Tables/*.cpp ./*.cpp 
+SOURCE = ./Managers/*.cpp ./Modules/*.cpp ./Servers/*.cpp ./Tables/*.cpp ./*.cpp 
 
 #-lboost_filesystem -lboost_system -lboost_serialization -lboost_thread -lpthread -lnfnetlink -lnetfilter_queue
 
