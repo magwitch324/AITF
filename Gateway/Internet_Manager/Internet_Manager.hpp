@@ -16,6 +16,7 @@ class Internet_Manager : Packet_Sniffer{
 	private:
 		void run();
 		void handle_handshake(std::vector<uint8_t> message);
+		void send_message(uint32_t ip, std::vector<uint8_t> message);
 		Packet_Manager* packet_manager;
 		boost::thread internet_thread;
 };

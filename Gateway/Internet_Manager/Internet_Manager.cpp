@@ -100,10 +100,28 @@ void Internet_Manager::handle_handshake(std::vector<uint8_t> message){
 			}
 			else{
 				//the rvalue is correct, just reflect the message back
-				//TODO: send message to gtw_ip
+				send_message(gtw_ip, message);
 			}
 
 		}
 	}
 
+}
+
+void Internet_Manager::send_message(uint32_t ip, std::vector<uint8_t> message){
+	boost::asio::io_service io_service;
+	in_addr* addr = (in_addr*)(&ip);
+	//convert the internet address to a string
+	std::string ip_addr(inet_ntoa(*addr));
+	log(logDEBUG) << "Sending message to " << ip_addr;
+
+	//prepare the socket
+	boost::asio::ip::udp::resolver resolver(io_service);
+	boost::asio::ip::udp::socket socket(io_service);
+	socket.open(boost::asio::ip::udp::v4());
+	boost::asio::ip::udp::resolver::query query(boost::asio::ip::udp::v4(), ip_addr,"50000");
+	boost::asio::ip::udp::endpoint receiver_endpoint = *resolver.resolve(query);
+
+	//send the message
+	socket.send_to(boost::asio::buffer(message), receiver_endpoint);
 }
