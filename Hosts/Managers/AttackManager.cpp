@@ -45,7 +45,7 @@ void AttackManager::addFilter(uint32_t dest, int timeout) {
 	llog(logINFO) << "Attack got request to add filter Packet";
 	//TODO add check for already existing request
 	filter->addNewFilter(dest, timeout);
-	this->sendFilterResponse(dest);
+	//this->sendFilterResponse(dest);
 }
 
 

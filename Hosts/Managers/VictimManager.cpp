@@ -92,7 +92,7 @@ int VictimManager::packetCallbackFunc(struct nfq_q_handle *qh, struct nfgenmsg *
 		llog(logERROR) << "RETURN VALUE: " << val;
 
 		if(val < 0) {
-			this->SendFilterRequest(&flow);
+			//this->SendFilterRequest(&flow);
 		}
 
 		llog(logDEBUG) << "Destination is this gateway";

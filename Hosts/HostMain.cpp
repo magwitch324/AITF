@@ -101,9 +101,9 @@ int main(int argc, char **argv){
 		atk_q = (counter*2+4);
 
 		delete pms[i-1];
-		sprintf( command, "iptables -D OUTPUT -s %s -d 10.4.13.0/24 -j NFQUEUE --queue-num %u", host_ip[counter], vic_q );
+		sprintf( command, "iptables -D OUTPUT -s %s -d 10.4.13.0/24 -j NFQUEUE --queue-num %u", host_ip[counter], atk_q );
 		system( command );
-		sprintf( command, "iptables -D INPUT -d %s -s 10.4.13.0/24 -j NFQUEUE --queue-num %u", host_ip[counter], atk_q );
+		sprintf( command, "iptables -D INPUT -d %s -s 10.4.13.0/24 -j NFQUEUE --queue-num %u", host_ip[counter], vic_q );
 		system( command );
 	}
 
