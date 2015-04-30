@@ -70,7 +70,7 @@ int VictimManager::packetCallbackFunc(struct nfq_q_handle *qh, struct nfgenmsg *
 	len = nfq_get_payload(nfad, &ORIGINAL_DATA);
 
 	if(ipHeader->protocol == 143){
-		log(logDEBUG) << "Received AITF PACKET!!!!";
+		llog(logDEBUG) << "Received AITF PACKET!!!!";
 		unsigned char modified_packet[len];
 		memcpy(&modified_packet[0], ORIGINAL_DATA, len);
 		Flow flow(std::vector<uint8_t>(&modified_packet[sizeof(*ipHeader)+1], &modified_packet[sizeof(*ipHeader)+1]+81));

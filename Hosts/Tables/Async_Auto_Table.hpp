@@ -29,7 +29,7 @@ class Async_Auto_Table : public Timed_Table {
 
 		std::unordered_map<uint32_t, int> table;
 		boost::asio::deadline_timer * print_timer;
-		//std::ofstream filehandle;
+
 };
 
 #endif
