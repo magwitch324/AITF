@@ -209,13 +209,45 @@ bool Flow::operator==(const Flow &other) const
 }
 
 std::ostream& operator<< (std::ostream& stream, const Flow& flow) {
-	stream << "(" << inet_ntoa(*((in_addr*)&(flow.src_ip))) << " -> "
+	uint32_t ipInt = flow.src_ip;
+	in_addr* addr = (in_addr*) &ipInt;
+	stream << "(" << inet_ntoa(*addr) << " -> ";
+
+	ipInt = flow.gtw0_ip;
+	addr = (in_addr*) &ipInt;
+	stream << inet_ntoa(*addr) << " -> ";
+
+	ipInt = flow.gtw1_ip;
+	addr = (in_addr*) &ipInt;
+	stream << inet_ntoa(*addr) << " -> ";
+
+	ipInt = flow.gtw2_ip;
+	addr = (in_addr*) &ipInt;
+	stream << inet_ntoa(*addr) << " -> ";
+
+	ipInt = flow.gtw3_ip;
+	addr = (in_addr*) &ipInt;
+	stream << inet_ntoa(*addr) << " -> ";
+
+	ipInt = flow.gtw4_ip;
+	addr = (in_addr*) &ipInt;
+	stream << inet_ntoa(*addr) << " -> ";
+
+	ipInt = flow.gtw5_ip;
+	addr = (in_addr*) &ipInt;
+	stream << inet_ntoa(*addr) << " -> ";
+
+	ipInt = flow.dst_ip;
+	addr = (in_addr*) &ipInt;
+	stream << inet_ntoa(*addr) << ")";
+
+	/*stream << "(" << inet_ntoa(*((in_addr*)&(flow.src_ip))) << " -> "
 			<< inet_ntoa(*((in_addr*)&(flow.gtw0_ip))) << " -> "
 			<< inet_ntoa(*((in_addr*)&(flow.gtw1_ip))) << " -> "
 			<< inet_ntoa(*((in_addr*)&(flow.gtw2_ip))) << " -> "
 			<< inet_ntoa(*((in_addr*)&(flow.gtw3_ip))) << " -> "
 			<< inet_ntoa(*((in_addr*)&(flow.gtw4_ip))) << " -> "
 			<< inet_ntoa(*((in_addr*)&(flow.gtw5_ip))) << " -> "
-			<< inet_ntoa(*((in_addr*)&(flow.dst_ip))) << ")";
+			<< inet_ntoa(*((in_addr*)&(flow.dst_ip))) << ")";*/
 	return stream;
 }
