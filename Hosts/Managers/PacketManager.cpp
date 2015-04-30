@@ -3,7 +3,7 @@
 #include "../logger.hpp"
 #include "../Servers/Udp_Server.hpp"
 
-PacketManager::PacketManager(uint32_t a_ip, int input_queue_num, int output_queue_num, PolicyModule * policy, FilterModule * filter) {
+PacketManager::PacketManager(uint32_t a_ip, uint32_t gtw, int input_queue_num, int output_queue_num, PolicyModule * policy, FilterModule * filter) {
 	llog(logINFO) << "Starting PacketManager";
 
 	ip = a_ip;
@@ -12,8 +12,8 @@ PacketManager::PacketManager(uint32_t a_ip, int input_queue_num, int output_queu
 	nfq_unbind_pf(this->my_netfilterqueue_handle, AF_INET);
 	nfq_bind_pf(this->my_netfilterqueue_handle, AF_INET);
 
-	this->victim_manager = new VictimManager(this->my_netfilterqueue_handle, input_queue_num, policy);
-	this->attack_manager = new AttackManager(a_ip, this->my_netfilterqueue_handle, output_queue_num, filter);
+	this->victim_manager = new VictimManager(a_ip, gtw, this->my_netfilterqueue_handle, input_queue_num, policy);
+	this->attack_manager = new AttackManager(a_ip, gtw, this->my_netfilterqueue_handle, output_queue_num, filter);
 
 	Udp_Server * udps;
 	udps = udps->getInstance();

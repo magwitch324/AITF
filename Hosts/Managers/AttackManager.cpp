@@ -9,10 +9,11 @@
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
 
-AttackManager::AttackManager(uint32_t ip, struct nfq_handle * a_nfq_handle, int attack_queue_num, FilterModule * fil) : HostManager(a_nfq_handle, attack_queue_num)  {
+AttackManager::AttackManager(uint32_t ip, uint32_t gtw, struct nfq_handle * a_nfq_handle, int attack_queue_num, FilterModule * fil) : HostManager(a_nfq_handle, attack_queue_num)  {
 	llog(logINFO) << "Starting AttackManager - " << ip;
 	filter = fil;
 	my_ip = ip;
+	my_gtw = gtw;
 }
 
 AttackManager::~AttackManager(void)  {
@@ -55,7 +56,9 @@ void AttackManager::sendFilterResponse(uint32_t dest) {
 
 	boost::asio::io_service io_service;
 	udp::resolver resolver(io_service);
-	udp::resolver::query query(udp::v4(),"10.4.13.1","50000"); //TODO: change query string
+	uint32_t ipINT = my_gtw;
+	in_addr* addr = (in_addr*)(&ipINT);
+	udp::resolver::query query(udp::v4(), std::string(inet_ntoa(*addr)), "50000"); //TODO: change query string
 	udp::endpoint receiver_endpoint = *resolver.resolve(query);
 
 	udp::socket socket(io_service);

@@ -36,9 +36,28 @@ void start_server(Udp_Server * udps) {
 }
 
 int main(int argc, char **argv){
+
+	char * cur_gateway;
+	int gateway_offset = 0;
+
+	if (argc < 4) {
+		llog(logERROR) << "Minimum parameters not meet\n USAGE : ./Hosts.out -g Gateway Host_IP [Host_IP .. ] [-g Gateway Host_IP [Host_IP .. ]]";
+		return -1;
+	} else if ((new std::string(argv[1]) == "-g") || (new std::string(argv[1]) == "-G")) {
+		cur_gateway = argv[2];
+		gateway_offset += 2;
+	} else{
+		llog(logERROR) << "Gateway not detected\n USAGE : ./Hosts.out -g Gateway Host_IP [Host_IP .. ] [-g Gateway Host_IP [Host_IP .. ]]";
+		return -1;
+
+	}
+
 	int i;
 	char command[200];
-	PacketManager * pms[argc-1];
+	PacketManager * pms[argc-3];
+	char * host_ip[argc-3];
+
+	int counter = 0, vic_q, atk_q;
 
 	PolicyModule * policy = new PolicyModule();
 	FilterModule * filter = new FilterModule();
@@ -49,12 +68,25 @@ int main(int argc, char **argv){
 	Udp_Server * udps;
 	udps = udps->getInstance();
 
-	for ( i = 1; i < argc; i ++ ) {
-		sprintf( command, "iptables -A INPUT -d %s -s 10.4.13.0/24 -j NFQUEUE --queue-num %u", argv[i], i*2+1 );
-		system( command );
-		sprintf( command, "iptables -A OUTPUT -s %s -d 10.4.13.0/24 -j NFQUEUE --queue-num %u", argv[i], i*2+2 );
-		system( command );
-		pms[i-1] = new PacketManager( inet_addr(argv[i]), i*2+1, i*2+2, policy, filter);
+	for ( i = 3; i < argc; i ++ ) {
+
+		if ((new std::string(argv[i]) == "-g") || (new std::string(argv[i]) == "-G")) {
+				cur_gateway = argv[i+1];
+				gateway_offset += 2;
+				i++;
+		} else {
+			vic_q = (counter*2+3);
+			atk_q = (counter*2+4);
+			host_ip[counter] = argv[i];
+
+			sprintf( command, "iptables -A INPUT -d %s -s 10.4.13.0/24 -j NFQUEUE --queue-num %u",host_ip[counter], vic_q );
+			system( command );
+			sprintf( command, "iptables -A OUTPUT -s %s -d 10.4.13.0/24 -j NFQUEUE --queue-num %u", host_ip[counter], atk_q );
+			system( command );
+			pms[counter] = new PacketManager( inet_addr(host_ip[counter]), inet_addr(cur_gateway) , vic_q, atk_q, policy, filter);
+			counter ++;
+		}
+
 	}
 	boost::thread udp_thread(&start_server, udps);
 
@@ -64,11 +96,14 @@ int main(int argc, char **argv){
 	udps->stop();
 	udp_thread.join();
 
-	for ( i = 1; i < argc; i ++ ) {
+	for ( i = counter - 1 ; i >= 0; i -- ) {
+		vic_q = (counter*2+3);
+		atk_q = (counter*2+4);
+
 		delete pms[i-1];
-		sprintf( command, "iptables -D OUTPUT -s %s -d 10.4.13.0/24 -j NFQUEUE --queue-num %u", argv[i], i*2+2 );
+		sprintf( command, "iptables -D OUTPUT -s %s -d 10.4.13.0/24 -j NFQUEUE --queue-num %u", host_ip[counter], vic_q );
 		system( command );
-		sprintf( command, "iptables -D INPUT -d %s -s 10.4.13.0/24 -j NFQUEUE --queue-num %u", argv[i], i*2+1 );
+		sprintf( command, "iptables -D INPUT -d %s -s 10.4.13.0/24 -j NFQUEUE --queue-num %u", host_ip[counter], atk_q );
 		system( command );
 	}
 

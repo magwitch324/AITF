@@ -24,7 +24,7 @@
 
 class PacketManager {
 	public:
-		PacketManager(uint32_t ip, int input_queue_num, int output_queue_num, PolicyModule * policy, FilterModule * filter);
+		PacketManager(uint32_t a_ip, uint32_t gtw, int input_queue_num, int output_queue_num, PolicyModule * policy, FilterModule * filter);
 		~PacketManager();
 		void aitfCommunication(std::vector<uint8_t> recv_buf);
 
