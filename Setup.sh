@@ -23,4 +23,7 @@ sudo make install
 cd ../../Gateway
 make
 
+#cd ../Scripts
+#($1).sh
+
 ifconfig

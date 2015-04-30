@@ -61,15 +61,18 @@ int VictimManager::packetCallbackFunc(struct nfq_q_handle *qh, struct nfgenmsg *
 	unsigned char *ORIGINAL_DATA;
 	struct iphdr *ipHeader;
 
+	llog(logINFO) << "Victim Received Packet2";
 	//get the packet id
 	ph = nfq_get_msg_packet_hdr(nfad);
 	u_int32_t id = ntohl(ph->packet_id);
-
+	llog(logINFO) << "Victim Received Packet3";
 
 	//get the packet contents
 	len = nfq_get_payload(nfad, &ORIGINAL_DATA);
 
 	ipHeader = (struct iphdr *)ORIGINAL_DATA;
+
+	llog(logINFO) << "Victim Received Packet4";
 
 	if(ipHeader->protocol == 143){
 		llog(logDEBUG) << "Received AITF PACKET!!!!";
@@ -85,6 +88,7 @@ int VictimManager::packetCallbackFunc(struct nfq_q_handle *qh, struct nfgenmsg *
 			this->SendFilterRequest(&flow, true);
 		}
 
+		llog(logDEBUG) << "Destination is this gateway";
 		unsigned char actual_packet[len-82];
 		memcpy(&actual_packet[0], ORIGINAL_DATA, sizeof(*ipHeader));
 		memcpy(&actual_packet[sizeof(*ipHeader)], ORIGINAL_DATA + sizeof(*ipHeader) + 82, len - sizeof(*ipHeader) - 82);
