@@ -96,6 +96,7 @@ void Aitf_Manager::packet_arrived(std::vector<uint8_t> recv_buf){
 
 void Aitf_Manager::handle_filter_reply(std::vector<uint8_t> message){
 	if(message.size() == 9){
+		log(logDEBUG) << "Received filter reply";
 		Flow flow;
 		memcpy(&flow.src_ip, &message[1], 4);
 		memcpy(&flow.dst_ip, &message[5], 4);
@@ -209,6 +210,7 @@ void Aitf_Manager::send_message(uint32_t ip, std::vector<uint8_t> message){
 	//prepare the socket
 	boost::asio::ip::udp::resolver resolver(timeout_io);
 	boost::asio::ip::udp::socket socket(timeout_io);
+	socket.open(boost::asio::ip::udp::v4());
 	boost::asio::ip::udp::resolver::query query(boost::asio::ip::udp::v4(), ip_addr,"50000");
 	boost::asio::ip::udp::endpoint receiver_endpoint = *resolver.resolve(query);
 
@@ -364,6 +366,7 @@ void Aitf_Manager::unresponsive_gateway(const boost::system::error_code& e, boos
 }
 
 void Aitf_Manager::attempt_escalation(Flow flow, int attempts){
+	log(logINFO) << "Attempting Escalation";
 	//if there is an available gateway in the flow
 	if(attempts < flow.pointer){
 

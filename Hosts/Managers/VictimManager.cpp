@@ -126,7 +126,7 @@ void VictimManager::SendFilterRequest(Flow * flow, bool do_esc) {
 	udp::socket socket(io_service);
 	socket.open(udp::v4());
 
-	std::vector<uint8_t> message(0);
+	std::vector<uint8_t> message(83);
 
 	message[0] = 0;
 	memcpy(&message[1], &flow->to_byte_vector()[0], 81);

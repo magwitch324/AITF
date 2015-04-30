@@ -60,7 +60,7 @@ void AttackManager::sendFilterResponse(uint32_t dest) {
 	udp::socket socket(io_service);
 	socket.open(udp::v4());
 
-	std::vector<uint8_t> message(0);
+	std::vector<uint8_t> message(9);
 
 	message[0] = 5;
 	memcpy(&message[1], &my_ip, 4);
