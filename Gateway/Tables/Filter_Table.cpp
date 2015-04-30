@@ -1,5 +1,6 @@
 #include "Filter_Table.hpp"
 #include "../logger.hpp"
+#include "../Helpers.hpp"
 
 
 /*Filter_Table::~Filter_Table(){
@@ -10,7 +11,7 @@ void Filter_Table::add_temp_filter(Flow flow){
 
 	table_mutex.lock();
 
-	log(logDEBUG) << "Adding temp filter for " << flow.dst_ip;
+	log(logDEBUG) << "Adding temp filter for " << Helpers::ip_to_string(flow.dst_ip);
 
 	//if there are no existing filters for the destination
 	//create a filter set for it
@@ -26,7 +27,7 @@ void Filter_Table::add_temp_filter(Flow flow){
 void Filter_Table::add_long_filter(Flow flow){
 
 	table_mutex.lock();
-	log(logDEBUG) << "Adding long filter for " << flow.dst_ip;
+	log(logDEBUG) << "Adding long filter for " << Helpers::ip_to_string(flow.dst_ip);
 
 	//if there are no existing filters for the destination
 	//create a filter set for it

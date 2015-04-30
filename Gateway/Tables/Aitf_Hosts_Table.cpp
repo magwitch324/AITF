@@ -3,6 +3,7 @@
 
 #include "Aitf_Hosts_Table.hpp"
 #include "../logger.hpp"
+#include "../Helpers.hpp"
 
 Aitf_Hosts_Table::Aitf_Hosts_Table(){
 	/*Filter_Info info;
@@ -29,7 +30,7 @@ bool Aitf_Hosts_Table::check_from_rate(uint32_t ip){
 
 	bool allowed = false;
 
-	log(logDEBUG) << "Checking from rate for " << ip;
+	log(logDEBUG) << "Checking from rate for " << Helpers::ip_to_string(ip);
 
 	//check if the ip is in the table
 	if(hosts.count(ip) == 1){
@@ -37,7 +38,7 @@ bool Aitf_Hosts_Table::check_from_rate(uint32_t ip){
 
 		//check that the host hasnt exceeded limit
 		if(host.from_amount < host.from_limit){
-			log(logDEBUG2) << "Allowing request for " << ip;
+			log(logDEBUG2) << "Allowing request for " << Helpers::ip_to_string(ip);
 
 			//increment the counter and allow the request
 			hosts[ip].from_amount++;
@@ -48,11 +49,11 @@ bool Aitf_Hosts_Table::check_from_rate(uint32_t ip){
 			timer->async_wait(boost::bind(&Aitf_Hosts_Table::decrement_from, this, boost::asio::placeholders::error, timer, ip));
 		}
 		else{
-			log(logDEBUG2) << "Denying request for " << ip;
+			log(logDEBUG2) << "Denying request for " << Helpers::ip_to_string(ip);
 		}
 	}
 	else{
-		log(logDEBUG2) << "Denying request for " << ip;
+		log(logDEBUG2) << "Denying request for " << Helpers::ip_to_string(ip);
 	}
 
 	//unlock the table
@@ -76,7 +77,7 @@ void Aitf_Hosts_Table::decrement_from(const boost::system::error_code& e, boost:
 
 	//lock the table
 	table_mutex.lock();
-	log(logDEBUG2) << "Decrementing from " << ip;
+	log(logDEBUG2) << "Decrementing from " << Helpers::ip_to_string(ip);
 	hosts[ip].from_amount--;
 
 	//unlock the table

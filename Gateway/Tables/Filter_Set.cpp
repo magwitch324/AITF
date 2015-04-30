@@ -1,5 +1,6 @@
 #include "Filter_Set.hpp"
 #include "../logger.hpp"
+#include "../Helpers.hpp"
 
 Filter_Set::Filter_Set(boost::mutex* mutex_, boost::asio::io_service* table_io_){
 	table_mutex = mutex_;
@@ -26,7 +27,7 @@ void Filter_Set::add_filter(Flow flow, int secs){
 	//if the filter is a * filter
 	if(flow.src_ip == 0){
 
-		log(logINFO) << "Creating * filter for " << flow.gtw0_ip;
+		log(logINFO) << "Creating * filter for " << Helpers::ip_to_string(flow.gtw0_ip);
 
 		//check if there is already a filter made
 		if(gateway_filters.count(flow.gtw0_ip) == 0){
@@ -55,7 +56,7 @@ void Filter_Set::add_filter(Flow flow, int secs){
 		//increment requests for this filter
 		flow_filters[*c_flow]++;
 
-		log(logINFO) << "Filter made for " << flow.src_ip << ". count at " << flow_filters[*c_flow];
+		log(logINFO) << "Filter made for " << Helpers::ip_to_string(flow.src_ip) << ". count at " << flow_filters[*c_flow];
 
 		//add callback
 		boost::shared_ptr<boost::asio::deadline_timer> timer(new boost::asio::deadline_timer(*table_io, boost::posix_time::seconds(secs)));
