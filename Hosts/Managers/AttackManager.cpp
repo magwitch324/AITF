@@ -70,8 +70,8 @@ void AttackManager::sendFilterResponse(uint32_t dest) {
 	memcpy(&message[1], &my_ip, 4);
 	memcpy(&message[5], &dest, 4);
 
-	uint32_t ipINT = dest;
-	in_addr* addr = (in_addr*)(&ipINT);
+	ipINT = dest;
+	addr = (in_addr*)(&ipINT);
 	llog(logERROR) << "The dest here is: " << inet_ntoa(*addr);
 
 	ipINT = my_ip;

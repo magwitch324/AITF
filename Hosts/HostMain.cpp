@@ -43,7 +43,7 @@ int main(int argc, char **argv){
 	if (argc < 4) {
 		llog(logERROR) << "Minimum parameters not meet\n USAGE : ./Hosts.out -g Gateway Host_IP [Host_IP .. ] [-g Gateway Host_IP [Host_IP .. ]]";
 		return -1;
-	} else if ((new std::string(argv[1]) == "-g") || (new std::string(argv[1]) == "-G")) {
+	} else if (std::string(argv[1]) == "-g" || std::string(argv[1]) == "-G") {
 		cur_gateway = argv[2];
 		gateway_offset += 2;
 	} else{
@@ -70,7 +70,7 @@ int main(int argc, char **argv){
 
 	for ( i = 3; i < argc; i ++ ) {
 
-		if ((new std::string(argv[i]) == "-g") || (new std::string(argv[i]) == "-G")) {
+		if (std::string(argv[i]) == "-g" || std::string(argv[i]) == "-G") {
 				cur_gateway = argv[i+1];
 				gateway_offset += 2;
 				i++;
