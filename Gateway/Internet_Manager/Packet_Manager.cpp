@@ -189,7 +189,7 @@ int Packet_Manager::packet_callback(struct nfq_q_handle *qh, struct nfgenmsg *nf
 			return nfq_set_verdict(qh, id, NF_ACCEPT, 0, NULL);
 		}
 		else{
-			log(logDEBUG) << "Destination is AITF dst: " << dst_ip;
+			log(logDEBUG) << "Destination is AITF dst: " << Helpers::ip_to_string(dst_ip);
 			//The dest is AITF enabled
 			//Insert a new RR header
 			unsigned char modified_packet[len+82];
