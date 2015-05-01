@@ -14,7 +14,7 @@ class FilterModule {
 	public:
 		FilterModule();
 		~FilterModule();
-		int sentPacket(uint32_t destination_ip);
+		bool shouldFilter(uint32_t destination_ip);
 		void addNewFilter(uint32_t destination_ip, int timeout);
 
 	private:

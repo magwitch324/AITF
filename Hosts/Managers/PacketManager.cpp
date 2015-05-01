@@ -2,6 +2,7 @@
 #include "PacketManager.hpp"
 #include "../logger.hpp"
 #include "../Servers/Udp_Server.hpp"
+#include "../Constants.h"
 
 PacketManager::PacketManager(uint32_t a_ip, uint32_t gtw, int input_queue_num, int output_queue_num, PolicyModule * policy, FilterModule * filter) {
 	llog(logINFO) << "Starting PacketManager";
@@ -51,7 +52,7 @@ void PacketManager::aitfCommunication(std::vector<uint8_t> recv_buf) {
 			break;
 		case 4: //Attack filter request
 			memcpy(&t_ip, &recv_buf[1], 4);
-			attack_manager->addFilter(t_ip, 30*1000);//10*60*1000); //TODO: TLONG
+			attack_manager->addFilter(t_ip, T_LONG_MS);
 			break;
 		case 5: //Filter request reply
 			//We should never receive one of these
