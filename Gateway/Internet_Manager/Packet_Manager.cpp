@@ -131,6 +131,7 @@ int Packet_Manager::packet_callback(struct nfq_q_handle *qh, struct nfgenmsg *nf
 		//If the packet already has an RR header
 		log(logDEBUG) << "AITF PACKET!!!!";
 
+
 		//make a copy of the packet to edit
 		unsigned char modified_packet[len];
 		memcpy(&modified_packet[0], ORIGINAL_DATA, len);
@@ -138,6 +139,8 @@ int Packet_Manager::packet_callback(struct nfq_q_handle *qh, struct nfgenmsg *nf
 		//get the Flow from the RR header
 		Flow flow(std::vector<uint8_t>(&modified_packet[sizeof(*ipHeader)+1], &modified_packet[sizeof(*ipHeader)+1]+81));
 		uint8_t ptr = flow.pointer + 1;
+		log(logDEBUG2) << "src_ip: " << Helpers::ip_to_string(flow.src_ip);
+		log(logDEBUG2) << "dst_ip: " << Helpers::ip_to_string(flow.dst_ip);
 
 		//if the number of gateways exceeds 6 drop the packet
 		if(ptr > 5){
@@ -162,13 +165,15 @@ int Packet_Manager::packet_callback(struct nfq_q_handle *qh, struct nfgenmsg *nf
 		}
 		//check to see if there is a filter for the flow
 		bool is_allowed = listener->is_allowed(flow, payload);
-
+		
+		for(int i = 0; i <= flow.pointer; i++){
+			log(logERROR) << "gtw ip " << i << Helpers::ip_to_string(flow.get_gtw_ip_at(i));
+			log(logERROR) << "gtw rvalue " << i << flow.get_gtw_rvalue_at(i);
+		}
 		if(!is_allowed){
 			return nfq_set_verdict(qh, id, NF_DROP, 0, NULL);
 		}
-		for(int i = 0; i <= flow.pointer; i++){
-			log(logERROR) << "gtw ip " << i << Helpers::ip_to_string(flow.get_gtw_ip_at(i));
-		}
+
 
 		//if the packet is allowed on then reinsert the new flow and recompute checksum
 		memcpy(&modified_packet[sizeof(*ipHeader) + 1], &flow.to_byte_vector()[0], 81);

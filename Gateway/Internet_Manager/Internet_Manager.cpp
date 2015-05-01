@@ -58,6 +58,9 @@ bool Internet_Manager::is_allowed(Flow flow, std::vector<uint8_t> payload){
 	bool is_allowed = true;
 	//Check if a filter exists for the packet
 	if(filter_table->flow_is_filtered(flow)){
+		log(logINFO) << "______---------_______FILTERING PACKET______---------_______";
+		log(logDEBUG) << "src_ip: " << Helpers::ip_to_string(flow.src_ip);
+		log(logDEBUG) << "dst_ip: " << Helpers::ip_to_string(flow.dst_ip);
 		is_allowed = false;
 
 		//if this message is from a gateway then it is part of a handshake
@@ -70,6 +73,7 @@ bool Internet_Manager::is_allowed(Flow flow, std::vector<uint8_t> payload){
 }
 
 void Internet_Manager::handle_handshake(std::vector<uint8_t> message){
+	log(logINFO) << "______---------_______HANDLING HANDSHAKE______---------_______";
 	//check that the message is the right size
 	if(message.size() == 91){
 		//check that the msg type is correct
@@ -100,6 +104,7 @@ void Internet_Manager::handle_handshake(std::vector<uint8_t> message){
 
 			}
 			else{
+				message[0] = 3;
 				//the rvalue is correct, just reflect the message back
 				send_message(gtw_ip, message);
 			}

@@ -10,9 +10,9 @@
 #include <boost/asio.hpp>
 #include <boost/shared_ptr.hpp>
 #include "../Flow.hpp"
+#include "../Constants.hpp"
 
-#define TEMP_TIME 2
-#define LONG_TIME 10
+
 
 
 

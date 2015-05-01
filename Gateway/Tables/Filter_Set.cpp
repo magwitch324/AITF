@@ -98,6 +98,7 @@ bool Filter_Set::flow_is_filtered(Flow flow){
 	}
 	else{
 		is_filtered = (flow_filters.count(flow) == 1);
+		log(logDEBUG2) << "In filter set checking flow: " << is_filtered;
 	}
 
 	//if there is no regular filter for it check the rvals
