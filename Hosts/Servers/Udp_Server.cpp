@@ -67,7 +67,6 @@ void Udp_Server::handle_receive(const boost::system::error_code& error, std::siz
 	//listen for new connections
 	udp_listen();
 
-	//TODO: add some call to the filter module
 	//pass the packet to the listener
 	if(reg_listens.size() > 0) {
 		reg_listens.begin()->second->aitfCommunication(data);

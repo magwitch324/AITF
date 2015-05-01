@@ -11,6 +11,7 @@
 
 #include "VictimManager.hpp"
 #include "../logger.hpp"
+#include "../Helpers.hpp"
 
 VictimManager::VictimManager(uint32_t ip, uint32_t gtw, struct nfq_handle * a_nfq_handle, int victim_queue_num, PolicyModule * pol) : HostManager(a_nfq_handle, victim_queue_num) {
 	llog(logINFO) << "Starting VictimManager";
@@ -117,9 +118,7 @@ void VictimManager::SendFilterRequest(Flow * flow) {
 
 	boost::asio::io_service io_service;
 	udp::resolver resolver(io_service);
-	uint32_t ipINT = my_gtw;
-	in_addr* addr = (in_addr*)(&ipINT);
-	udp::resolver::query query(udp::v4(), std::string(inet_ntoa(*addr)), "50000"); //TODO: change query string
+	udp::resolver::query query(udp::v4(),  Helpers::ip_to_string(my_gtw), "50000");
 	udp::endpoint receiver_endpoint = *resolver.resolve(query);
 
 	udp::socket socket(io_service);
