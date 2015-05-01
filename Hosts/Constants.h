@@ -22,7 +22,7 @@
 #define T_TEMP_MS T_TEMP*1000 //T_temp in seconds
 #endif
 
-
+extern uint8_t ESCELATION;
 
 
 #endif /* CONSTANTS_H_ */

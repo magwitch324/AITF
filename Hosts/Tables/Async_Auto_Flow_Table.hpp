@@ -35,6 +35,7 @@ class Async_Auto_Flow_Table : public Timed_Table {
 		void printStatus(const boost::system::error_code& e, std::string filename, uint32_t timeout);
 
 		std::unordered_map<Flow, int, KeyHasher> table;
+		std::unordered_map<Flow, bool, KeyHasher> recent;
 		boost::asio::deadline_timer * print_timer;
 
 };

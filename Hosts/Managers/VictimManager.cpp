@@ -12,6 +12,7 @@
 #include "VictimManager.hpp"
 #include "../logger.hpp"
 #include "../Helpers.hpp"
+#include "../Constants.hpp"
 
 VictimManager::VictimManager(uint32_t ip, uint32_t gtw, struct nfq_handle * a_nfq_handle, int victim_queue_num, PolicyModule * pol) : HostManager(a_nfq_handle, victim_queue_num) {
 	llog(logINFO) << "Starting VictimManager";
@@ -124,7 +125,7 @@ void VictimManager::SendFilterRequest(Flow * flow) {
 
 	message[0] = 0;
 	memcpy(&message[1], &flow->to_byte_vector()[0], 81);
-	message[82] = 0;
+	message[82] = ESCELATION;
 
 	socket.send_to(boost::asio::buffer(message), receiver_endpoint);
 }
