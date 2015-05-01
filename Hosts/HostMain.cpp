@@ -83,6 +83,7 @@ int main(int argc, char **argv){
 			system( command );
 			sprintf( command, "iptables -A OUTPUT -s %s -d 10.4.13.0/24 -j NFQUEUE --queue-num %u", host_ip[counter], atk_q );
 			system( command );
+			llog(logINFO) << "---------------------------------------------------------Test here";
 			pms[counter] = new PacketManager( inet_addr(host_ip[counter]), inet_addr(cur_gateway) , vic_q, atk_q, policy, filter);
 			counter ++;
 		}
