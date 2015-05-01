@@ -102,6 +102,7 @@ int main(int argc, char **argv){
 
 		delete pms[i-1];
 		sprintf( command, "iptables -D OUTPUT -s %s -d 10.4.13.0/24 -j NFQUEUE --queue-num %u", host_ip[counter], atk_q );
+		llog(logINFO) << command;
 		system( command );
 		sprintf( command, "iptables -D INPUT -d %s -s 10.4.13.0/24 -j NFQUEUE --queue-num %u", host_ip[counter], vic_q );
 		system( command );
