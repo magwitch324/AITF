@@ -43,10 +43,14 @@ void set_gateway_values(int x){
 	switch(x){
 		case 1:
 			MY_IP = inet_addr("10.4.13.3");
-			aitf_hosts_table->add_host(inet_addr("10.4.13.1"), 10);
+			aitf_hosts_table->add_host(inet_addr("10.4.13.1"), 1);
 			aitf_hosts_table->add_host(inet_addr("10.4.13.5"), 10);
-			aitf_hosts_table->add_host(inet_addr("10.4.13.3"), 10);
 			aitf_hosts_table->add_host(inet_addr("10.4.13.4"), 10);
+
+			aitf_hosts_table->add_host(inet_addr("10.4.13.128"), 10);
+			aitf_hosts_table->add_host(inet_addr("10.4.13.129"), 10);
+			aitf_hosts_table->add_host(inet_addr("10.4.13.130"), 10);
+			aitf_hosts_table->add_host(inet_addr("10.4.13.131"), 10);
 		break;
 		case 2:
 			MY_IP = inet_addr("10.4.13.4");

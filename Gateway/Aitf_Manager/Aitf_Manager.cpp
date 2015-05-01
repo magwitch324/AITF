@@ -152,11 +152,13 @@ void Aitf_Manager::handle_handshake_finish(std::vector<uint8_t> message){
 
 			filter_table->add_temp_filter(flow);
 
+#ifndef LYING
 			log(logDEBUG2) << "checking shadow table";
 			//check shadow table
 			int request_attempts = shadow_table->attempt_count(flow);
 
 			deal_with_attacker(flow, request_attempts);
+#endif
 		}
 	}
 }
@@ -272,7 +274,7 @@ void Aitf_Manager::handle_filter_request(std::vector<uint8_t> message){
 			else{
 				log(logDEBUG2) << "Dealing with another gateway";
 				//if this is a repeat offense for the gateway (twice)
-				if(request_attempts > 2){
+				if(request_attempts >= 2){
 					attempt_escalation(flow, request_attempts - 1);
 				}
 				else{
@@ -422,8 +424,7 @@ void Aitf_Manager::attempt_escalation(Flow flow, int attempts){
 	//if there is an available gateway in the flow
 	if(attempts < flow.pointer){
 
-		//construct the handshake
-		std::vector<uint8_t> handshake = create_handshake(flow, attempts);
+		
 
 		//Create filter for return handshake with only correct gateways
 		uint32_t dst_gtw_ip = flow.get_gtw_ip_at(attempts);
@@ -440,6 +441,13 @@ void Aitf_Manager::attempt_escalation(Flow flow, int attempts){
 		}
 
 		filter_table->add_temp_filter(handshake_flow);
+
+		//set the src to 0 for *
+		Flow modified_flow(flow);
+		modified_flow.src_ip = 0;
+
+		//construct the handshake
+		std::vector<uint8_t> handshake = create_handshake(modified_flow, attempts);
 
 		//SEND HANDSHAKE
 		send_message(dst_gtw_ip, handshake);
