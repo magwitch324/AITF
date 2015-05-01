@@ -80,19 +80,16 @@ int VictimManager::packetCallbackFunc(struct nfq_q_handle *qh, struct nfgenmsg *
 		Flow flow(std::vector<uint8_t>(&modified_packet[sizeof(*ipHeader)+1], &modified_packet[sizeof(*ipHeader)+1]+81));
 
 		for(int i = 0; i <= flow.pointer; i++){
-			uint32_t ipInt = flow.get_gtw_ip_at(i);
-			in_addr* addr = (in_addr*) &ipInt;
-			llog(logERROR) << "gtw ip " << i << inet_ntoa(*addr);
+			llog(logDEBUG2) << "gtw ip " << i << Helpers::ip_to_string(flow.get_gtw_ip_at(i));
 		}
 		
 		int val = policy->receivedPacket(flow, len-82);
-		llog(logERROR) << "RETURN VALUE: " << val;
+		llog(logDEBUG) << "RETURN VALUE: " << val;
 
 		if(val < 0) {
 			this->SendFilterRequest(&flow);
 		}
 
-		llog(logDEBUG) << "Destination is this gateway";
 		unsigned char actual_packet[len-82];
 		memcpy(&actual_packet[0], ORIGINAL_DATA, sizeof(*ipHeader));
 		memcpy(&actual_packet[sizeof(*ipHeader)], ORIGINAL_DATA + sizeof(*ipHeader) + 82, len - sizeof(*ipHeader) - 82);
@@ -101,18 +98,17 @@ int VictimManager::packetCallbackFunc(struct nfq_q_handle *qh, struct nfgenmsg *
 
 		//compute the new checksum
 		compute_ip_checksum((struct iphdr*) &actual_packet[0]);
-		llog(logDEBUG2) << std::hex << ((struct iphdr*) &actual_packet[0])->check;
 		return nfq_set_verdict(qh, id, NF_ACCEPT, len-82, &actual_packet[0]);
 
 	}
 
-	llog(logDEBUG) << "Received Normal PACKET :(";
+	llog(logINFO) << "Received Normal PACKET :(";
 	return nfq_set_verdict(qh, id, NF_ACCEPT, 0, NULL);
 
 }
 
 void VictimManager::SendFilterRequest(Flow * flow) {
-	llog(logDEBUG) << "Sending Filter request - gtwy r" << flow->gtw0_rvalue;
+	llog(logDEBUG) << "Sending Filter request - gtwy " << Helpers::ip_to_string(flow->gtw0_ip) << " with r" << flow->gtw0_rvalue;
 	using namespace boost::asio;
 	using boost::asio::ip::udp;
 

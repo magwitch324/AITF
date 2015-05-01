@@ -8,9 +8,10 @@
 #include "FilterModule.hpp"
 #include "../logger.hpp"
 #include "../Constants.h"
+#include "../Helpers.hpp"
 
 FilterModule::FilterModule() {
-	llog(logDEBUG) << "Creating filter module";
+	llog(logINFO) << "Creating filter module";
 	activeFilters = new Async_Auto_Table( "../activeFilters.log", 1000);
 	activeFilters->start_thread();
 	//activeFilters = new Async_Auto_Table();
@@ -18,7 +19,7 @@ FilterModule::FilterModule() {
 }
 
 FilterModule::~FilterModule() {
-	llog(logDEBUG) << "Deleting filter module";
+	llog(logINFO) << "Deleting filter module";
 	activeFilters->stop_thread();
 	delete activeFilters;
 }
@@ -28,7 +29,7 @@ bool FilterModule::shouldFilter(uint32_t destination_ip) {
 }
 
 void FilterModule::addNewFilter(uint32_t destination_ip, int timeout) {
-	llog(logDEBUG) << "Setting new filter to " << destination_ip;
+	llog(logDEBUG) << "Setting new filter to " << Helpers::ip_to_string(destination_ip);
 
 #ifdef LYING_ATTACKER
 	timeout = (std::rand() % ( timeout - T_TEMP_MS*2) ) + T_TEMP_MS*2;

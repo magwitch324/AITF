@@ -1,13 +1,15 @@
 #include <boost/bind.hpp>
 
 #include "Udp_Server.hpp"
+#include "../Helpers.hpp"
+
 Udp_Server * Udp_Server::udpserver = 0;
 
 using namespace boost::asio;
 using boost::asio::ip::udp;
 
 bool Udp_Server::registerIP(uint32_t ip, PacketManager * pm) {
-	llog(logDEBUG) << "Registering " << ip;
+	llog(logDEBUG2) << "Registering " << Helpers::ip_to_string(ip);
 	if(reg_listens.count(ip) > 0) {
 		return false;
 	}
@@ -26,7 +28,7 @@ Udp_Server * Udp_Server::getInstance() {
 }
 
 Udp_Server::Udp_Server() {
-	llog(logDEBUG) << "Creating server instance";
+	llog(logINFO) << "Creating server instance";
 }
 
 //Starts the udp server.
@@ -58,7 +60,7 @@ void Udp_Server::udp_listen(){
 
 //Called when a udp packet is received
 void Udp_Server::handle_receive(const boost::system::error_code& error, std::size_t size){
-	llog(logINFO) << "-------------------Receiving message-------------------";
+	llog(logINFO) << "-------------------Received message-------------------";
 
 	uint32_t ip = 0;
 

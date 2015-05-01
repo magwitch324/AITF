@@ -36,6 +36,7 @@ void start_server(Udp_Server * udps) {
 }
 
 int main(int argc, char **argv){
+	set_log_level(4);
 
 	char * cur_gateway;
 	int gateway_offset = 0;
@@ -63,7 +64,6 @@ int main(int argc, char **argv){
 	FilterModule * filter = new FilterModule();
 
 	llog(logINFO) << "Starting Main";
-	set_log_level(4);
 
 	Udp_Server * udps;
 	udps = udps->getInstance();

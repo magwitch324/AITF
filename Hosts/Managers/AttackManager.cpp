@@ -12,14 +12,14 @@
 #include "../Helpers.hpp"
 
 AttackManager::AttackManager(uint32_t ip, uint32_t gtw, struct nfq_handle * a_nfq_handle, int attack_queue_num, FilterModule * fil) : HostManager(a_nfq_handle, attack_queue_num)  {
-	llog(logINFO) << "Starting AttackManager - " << ip;
+	llog(logINFO) << "Starting AttackManager - " << Helpers::ip_to_string(ip);
 	filter = fil;
 	my_ip = ip;
 	my_gtw = gtw;
 }
 
 AttackManager::~AttackManager(void)  {
-	llog(logINFO) << "Destroying AttackManager - " << my_ip;
+	llog(logINFO) << "Destroying AttackManager - " << Helpers::ip_to_string(my_ip);
 	state.store(this->ENDING, boost::memory_order_relaxed);
 	packet_thread->interrupt();
 	packet_thread->join();

@@ -3,6 +3,7 @@
 
 #include "Async_Auto_Table.hpp"
 #include "../logger.hpp"
+#include "../Helpers.hpp"
 
 Async_Auto_Table::Async_Auto_Table() {
 	llog(logDEBUG) << "I am creating normal int table " ;
@@ -24,7 +25,7 @@ Async_Auto_Table::Async_Auto_Table(std::string filename, uint32_t timeout) {
 
 Async_Auto_Table::~Async_Auto_Table() {
 	
-	llog(logDEBUG) << "I am deleteing int table" ;
+	llog(logDEBUG) << "I am deleting int table" ;
 
 	if (print_timer) {
 		print_timer->cancel();
@@ -34,7 +35,7 @@ Async_Auto_Table::~Async_Auto_Table() {
 }
 
 int Async_Auto_Table::getValue(uint32_t ip) {
-	llog(logDEBUG) << "get value from flow table " << ip;
+	llog(logDEBUG) << "get value from flow table " << Helpers::ip_to_string(ip);
 	int value = -1;
 	table_mutex.lock();
 	if (table.count(ip) > 0) {
@@ -53,7 +54,7 @@ int Async_Auto_Table::getValue(uint32_t ip) {
  *	output: the given value or -1 if the max was surpassed with the new value added and not already surpassed
  */
 int Async_Auto_Table::addValue(uint32_t ip, int value, int max, uint32_t timeout) {
-	llog(logDEBUG) << "adding " << value << " to " << ip;
+	llog(logDEBUG) << "adding " << value << " to " << Helpers::ip_to_string(ip);
 	int ret = value;
 	table_mutex.lock();
 
@@ -71,7 +72,8 @@ int Async_Auto_Table::addValue(uint32_t ip, int value, int max, uint32_t timeout
 
 
 void Async_Auto_Table::decrement(const boost::system::error_code& e, boost::shared_ptr<boost::asio::deadline_timer> timer, uint32_t ip, int value) {
-	llog(logDEBUG) << "removing " << value << " to " << ip;
+	llog(logDEBUG) << "removing " << value << " to " << Helpers::ip_to_string(ip) ;
+
 	timer.reset();
 
 	table_mutex.lock();

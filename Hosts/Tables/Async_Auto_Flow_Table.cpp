@@ -22,7 +22,7 @@ Async_Auto_Flow_Table::Async_Auto_Flow_Table(std::string filename, uint32_t time
 }
 
 Async_Auto_Flow_Table::~Async_Auto_Flow_Table() {
-	llog(logDEBUG) << "Destory this flow table";
+	llog(logDEBUG) << "Destroy this flow table";
 	if (print_timer) {
 		print_timer->cancel();
 		delete(print_timer);

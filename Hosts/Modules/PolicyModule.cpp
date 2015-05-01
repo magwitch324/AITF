@@ -8,6 +8,7 @@
 
 #include "PolicyModule.hpp"
 #include "../logger.hpp"
+#include "../Helpers.hpp"
 
 
 PolicyModule::PolicyModule(){
@@ -163,14 +164,13 @@ PolicyModule::~PolicyModule() {
  * 			size - the size of the packet that was received
  * 	output: size - everything works out and nothing should be done
  * 			-1 - the source exceeded it's limit for the first time
- * 			-2 - the source exceeded it's limit for within t_long time meaning some form of escalation should take place
  */
 int PolicyModule::receivedPacket(Flow flow, int size){
 	llog(logDEBUG) << "I received a packet from " << flow;
 	int max = 0, bwu_ret;
 
 	if (defaults.count(flow.src_ip) > 0) {
-		llog(logINFO) << "Found max " << flow.src_ip << " for " << defaults[flow.src_ip];
+		llog(logINFO) << "Found max " << Helpers::ip_to_string(flow.src_ip) << " for " << defaults[flow.src_ip];
 		max = defaults[flow.src_ip];
 	} else {
 		max = -1;
