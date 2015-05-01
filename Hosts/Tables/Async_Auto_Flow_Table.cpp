@@ -62,12 +62,20 @@ int Async_Auto_Flow_Table::addValue(Flow flow, int value, int max, uint32_t time
 		llog(logINFO) << "FOUND higher value - " << flow;
 		llog(logINFO) << "------------------------------------------------------------";
 	}
-	if ((max > 0) && (table[flow] > max) && ((table[flow] - value) <= max) )
-		ret = -1;
+
+	if ((max > 0) && (table[flow] > max) ) {
+		if (recent.count(flow) == 0) {
+			 recent[flow] = false;
+		}
+		if(!recent[flow]){
+			ret = -1;
+			recent[flow] = true;
+		}
+	}
 	//llog(logINFO) << "++" << flow << "Added " << value << " to make " << table[flow];
 	table_mutex.unlock();
 
-	boost::shared_ptr<boost::asio::deadline_timer> timer(new boost::asio::deadline_timer(table_io, boost::posix_time::seconds(1)));
+	boost::shared_ptr<boost::asio::deadline_timer> timer(new boost::asio::deadline_timer(table_io, boost::posix_time::milliseconds(timeout)));
 	timer->async_wait(boost::bind(&Async_Auto_Flow_Table::decrement, this, boost::asio::placeholders::error, timer, flow, value));
 	return ret;
 }
@@ -79,6 +87,7 @@ void Async_Auto_Flow_Table::decrement(const boost::system::error_code& e, boost:
 
 	table_mutex.lock();
 
+	recent[flow] = false;
 	table[flow] -= value;
 
 	//llog(logINFO) << "--" << flow << "removed " << value << " to make " << table[flow];

@@ -5,3 +5,6 @@ sudo sysctl -w net.ipv4.conf.all.send_redirects=0
 sudo ip route add 10.4.13.3 via 10.4.13.2 dev eth0
 sudo ip route add 10.4.13.4 via 10.4.13.2 dev eth0
 sudo ip route add 10.4.13.6 via 10.4.13.2 dev eth0
+
+sudo iptables -A OUTPUT -p icmp --icmp-type redirect -j DROP
+sudo iptables -A INPUT -p icmp --icmp-type redirect -j DROP
