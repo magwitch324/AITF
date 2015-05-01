@@ -38,25 +38,20 @@ void PacketManager::aitfCommunication(std::vector<uint8_t> recv_buf) {
 	uint32_t t_ip = 0;
 
 	switch(msg_type){
-		case 0: //Filter request
-			//We should never receive one of these
-			break;
-		case 1: //Handshake request
-			//We should never receive one of these
-			break;
-		case 2: //Handshake Part 2
-			//We should never receive one of these
-			break;
-		case 3: //Handshake part 3
-			//We should never receive one of these
-			break;
 		case 4: //Attack filter request
 			memcpy(&t_ip, &recv_buf[1], 4);
 			attack_manager->addFilter(t_ip, T_LONG_MS);
 			break;
+		case 0: //Filter request
+			//We should never receive one of these
+		case 1: //Handshake request
+			//We should never receive one of these
+		case 2: //Handshake Part 2
+			//We should never receive one of these
+		case 3: //Handshake part 3
+			//We should never receive one of these
 		case 5: //Filter request reply
 			//We should never receive one of these
-			break;
 		default:
 			llog(logWARNING) << "Invalid message type";
 			break;

@@ -12,7 +12,7 @@
 #include "VictimManager.hpp"
 #include "../logger.hpp"
 #include "../Helpers.hpp"
-#include "../Constants.hpp"
+#include "../Constants.h"
 
 VictimManager::VictimManager(uint32_t ip, uint32_t gtw, struct nfq_handle * a_nfq_handle, int victim_queue_num, PolicyModule * pol) : HostManager(a_nfq_handle, victim_queue_num) {
 	llog(logINFO) << "Starting VictimManager";
@@ -51,14 +51,14 @@ static unsigned short compute_checksum(unsigned short *addr, unsigned int count)
 
 /* set ip checksum of a given ip header*/
 void compute_ip_checksum(struct iphdr* iphdrp){
-	llog(logINFO) << "Computing checksum";
+	llog(logDEBUG2) << "Computing checksum";
 	iphdrp->check = 0;
 	iphdrp->check = compute_checksum((unsigned short*)iphdrp, iphdrp->ihl<<2);
 }
 
 
 int VictimManager::packetCallbackFunc(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg, struct nfq_data *nfad, void *data) {
-	llog(logINFO) << "Victim Received Packet";
+	llog(logINFO) << "================================= " << Helpers::ip_to_string(my_ip) << "Received packet =====================";
 
 	struct nfqnl_msg_packet_hdr *ph;
 	int len;
@@ -75,14 +75,10 @@ int VictimManager::packetCallbackFunc(struct nfq_q_handle *qh, struct nfgenmsg *
 	ipHeader = (struct iphdr *)ORIGINAL_DATA;
 
 	if(ipHeader->protocol == 143){
-		llog(logDEBUG) << "Received AITF PACKET!!!!";
+		llog(logINFO) << "Received AITF PACKET!!!!";
 		unsigned char modified_packet[len];
 		memcpy(&modified_packet[0], ORIGINAL_DATA, len);
 		Flow flow(std::vector<uint8_t>(&modified_packet[sizeof(*ipHeader)+1], &modified_packet[sizeof(*ipHeader)+1]+81));
-
-		for(int i = 0; i <= flow.pointer; i++){
-			llog(logDEBUG2) << "gtw ip " << i << Helpers::ip_to_string(flow.get_gtw_ip_at(i));
-		}
 		
 		int val = policy->receivedPacket(flow, len-82);
 		llog(logDEBUG) << "RETURN VALUE: " << val;
@@ -103,7 +99,7 @@ int VictimManager::packetCallbackFunc(struct nfq_q_handle *qh, struct nfgenmsg *
 
 	}
 
-	llog(logINFO) << "Received Normal PACKET :(";
+	llog(logINFO) << "Received Normal PACKET";
 	return nfq_set_verdict(qh, id, NF_ACCEPT, 0, NULL);
 
 }

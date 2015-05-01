@@ -9,10 +9,11 @@
 #include "../logger.hpp"
 #include "../Constants.h"
 #include "../Helpers.hpp"
+#include "../Flow.hpp"
 
 FilterModule::FilterModule() {
 	llog(logINFO) << "Creating filter module";
-	activeFilters = new Async_Auto_Table( "../activeFilters.log", 1000);
+	activeFilters = new Async_Auto_Flow_Table( "../activeFilters.log", 1000);
 	activeFilters->start_thread();
 	//activeFilters = new Async_Auto_Table();
 
@@ -24,16 +25,25 @@ FilterModule::~FilterModule() {
 	delete activeFilters;
 }
 
-bool FilterModule::shouldFilter(uint32_t destination_ip) {
-	return activeFilters->getValue(destination_ip) > 0;
+bool FilterModule::shouldFilter(uint32_t source_ip, uint32_t destination_ip) {
+	Flow flow;
+	flow.src_ip = source_ip;
+	flow.dst_ip = destination_ip;
+
+	return (activeFilters->getValue(flow) > 0);
 }
 
-void FilterModule::addNewFilter(uint32_t destination_ip, int timeout) {
-	llog(logDEBUG) << "Setting new filter to " << Helpers::ip_to_string(destination_ip);
+void FilterModule::addNewFilter(uint32_t source_ip, uint32_t destination_ip, int timeout) {
 
 #ifdef LYING_ATTACKER
 	timeout = (std::rand() % ( timeout - T_TEMP_MS*2) ) + T_TEMP_MS*2;
 #endif
 
-	activeFilters->addValue(destination_ip, 1, -1, timeout);
+	llog(logINFO) << "Setting new filter for all traffic from " << Helpers::ip_to_string(source_ip) << " to " << Helpers::ip_to_string(destination_ip) << " for " << Helpers::ip_to_string(destination_ip) << "ms";
+
+	Flow flow;
+	flow.src_ip = source_ip;
+	flow.dst_ip = destination_ip;
+
+	activeFilters->addValue(flow, 1, -1, timeout);
 }

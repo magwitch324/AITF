@@ -34,7 +34,7 @@ HostManager::HostManager(struct nfq_handle * a_nfq_handle, int queue_num) {
 
 
 void HostManager::packetRecieveThreadFunc(struct nfq_handle * a_nfq_handle) {
-	llog(logINFO) << "a Host Manager Received a packet";
+
 	int fd;
 	int rv;
 	char buf[4096] __attribute__ ((aligned));

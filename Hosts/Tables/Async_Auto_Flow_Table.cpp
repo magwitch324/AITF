@@ -31,7 +31,7 @@ Async_Auto_Flow_Table::~Async_Auto_Flow_Table() {
 }
 
 int Async_Auto_Flow_Table::getValue(Flow flow) {
-	llog(logDEBUG) << "get value from flow table " << flow;
+	llog(logDEBUG2) << "get value from flow table " << flow;
 	int value = -1;
 	table_mutex.lock();
 	if (table.count(flow) > 0) {
@@ -51,16 +51,16 @@ int Async_Auto_Flow_Table::getValue(Flow flow) {
  *	output: the given value or -1 if the max was surpassed with the new value added and not already surpassed
  */
 int Async_Auto_Flow_Table::addValue(Flow flow, int value, int max, uint32_t timeout) {
-	llog(logDEBUG) << "adding " << value << " to " << flow;
+	llog(logDEBUG2) << "adding " << value << " to " << flow;
 	int ret = value;
 	table_mutex.lock();
 
 	table[flow] += value;
 
 	if (table[flow] > max) {
-		llog(logINFO) << "------------------------------------------------------------";
-		llog(logINFO) << "FOUND higher value - " << flow;
-		llog(logINFO) << "------------------------------------------------------------";
+		llog(logDEBUG) << "------------------------------------------------------------";
+		llog(logDEBUG) << "FOUND higher value - " << flow;
+		llog(logDEBUG) << "------------------------------------------------------------";
 	}
 
 	if ((max > 0) && (table[flow] > max) ) {
@@ -72,7 +72,6 @@ int Async_Auto_Flow_Table::addValue(Flow flow, int value, int max, uint32_t time
 			recent[flow] = true;
 		}
 	}
-	//llog(logINFO) << "++" << flow << "Added " << value << " to make " << table[flow];
 	table_mutex.unlock();
 
 	boost::shared_ptr<boost::asio::deadline_timer> timer(new boost::asio::deadline_timer(table_io, boost::posix_time::milliseconds(timeout)));
@@ -90,7 +89,6 @@ void Async_Auto_Flow_Table::decrement(const boost::system::error_code& e, boost:
 	recent[flow] = false;
 	table[flow] -= value;
 
-	//llog(logINFO) << "--" << flow << "removed " << value << " to make " << table[flow];
 	if (table[flow] == 0)
 		table.erase(flow);
 

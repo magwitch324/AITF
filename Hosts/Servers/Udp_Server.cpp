@@ -60,7 +60,7 @@ void Udp_Server::udp_listen(){
 
 //Called when a udp packet is received
 void Udp_Server::handle_receive(const boost::system::error_code& error, std::size_t size){
-	llog(logINFO) << "-------------------Received message-------------------";
+	llog(logINFO) << "-------------------Received UDP message-------------------";
 
 	uint32_t ip = 0;
 

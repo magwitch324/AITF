@@ -37,17 +37,19 @@ void start_server(Udp_Server * udps) {
 }
 
 int main(int argc, char **argv){
-	set_log_level(4);
+
 
 	char * cur_gateway;
 	int gateway_offset = 0;
-	uint8_t ESCELATION = atoi(argv[1]);
+	ESCELATION = atoi(argv[1]);
 
-	if (argc < 5) {
+	set_log_level(atoi(argv[2]));
+
+	if (argc < 6) {
 		llog(logERROR) << "Minimum parameters not meet\n USAGE : ./Hosts.out -g Gateway Host_IP [Host_IP .. ] [-g Gateway Host_IP [Host_IP .. ]]";
 		return -1;
-	} else if (std::string(argv[2]) == "-g" || std::string(argv[2]) == "-G") {
-		cur_gateway = argv[3];
+	} else if (std::string(argv[3]) == "-g" || std::string(argv[3]) == "-G") {
+		cur_gateway = argv[4];
 		gateway_offset += 2;
 	} else{
 		llog(logERROR) << "Gateway not detected\n USAGE : ./Hosts.out -g Gateway Host_IP [Host_IP .. ] [-g Gateway Host_IP [Host_IP .. ]]";
@@ -57,8 +59,8 @@ int main(int argc, char **argv){
 
 	int i;
 	char command[200];
-	PacketManager * pms[argc-4];
-	char * host_ip[argc-4];
+	PacketManager * pms[argc-5];
+	char * host_ip[argc-5];
 
 	int counter = 0, vic_q, atk_q;
 
@@ -70,7 +72,7 @@ int main(int argc, char **argv){
 	Udp_Server * udps;
 	udps = udps->getInstance();
 
-	for ( i = 4; i < argc; i ++ ) {
+	for ( i = 5; i < argc; i ++ ) {
 
 		if (std::string(argv[i]) == "-g" || std::string(argv[i]) == "-G") {
 				cur_gateway = argv[i+1];

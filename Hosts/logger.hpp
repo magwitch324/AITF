@@ -5,7 +5,7 @@
 
 #include <iostream>
 #include <sstream>
-
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 
 enum loglevel_e
@@ -21,6 +21,8 @@ class logIt
 	logIt(loglevel_e _loglevel = logERROR, int endline = 1) {
 		end_line = endline;
 		loglevel2 = _loglevel;
+
+		_buffer << (boost::posix_time::second_clock::local_time().time_of_day().seconds());
 
 		if(endline != 2){
 			switch(loglevel2){
