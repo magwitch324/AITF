@@ -2,6 +2,8 @@ all: Gateway
 
 SOURCE = ./Aitf_Manager/*.cpp  ./Tables/*.cpp ./*.cpp ./Internet_Manager/*.cpp
 
+Everything: Gateway Lying Unresponsive Forge
+
 Gateway: ./Aitf_Manager/*.cpp ./Internet_Manager/*.cpp *.hpp
 	g++ -g -std=gnu++11 $(SOURCE) -lcrypto -lboost_system -lboost_thread -lpthread -lnfnetlink -lnetfilter_queue -o Gateway.out
 
@@ -10,7 +12,6 @@ Lying: $(SOURCE)
 
 Unresponsive: $(SOURCE)
 	g++ -g -std=gnu++11 -DUNRESPONSIVE $(SOURCE) -lcrypto -lboost_system -lboost_thread -lpthread -lnfnetlink -lnetfilter_queue -o UGateway.out	
-
 
 Forge: $(SOURCE)
 	g++ -g -std=gnu++11 -DFORGE $(SOURCE) -lcrypto -lboost_system -lboost_thread -lpthread -lnfnetlink -lnetfilter_queue -o FGateway.out	

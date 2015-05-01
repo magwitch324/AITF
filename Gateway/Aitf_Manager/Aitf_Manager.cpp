@@ -343,9 +343,10 @@ void Aitf_Manager::deal_with_attacker(Flow flow, int request_attempts){
 			filter_table->add_long_filter(flow);
 		}
 		else{
-			std::vector<uint8_t> message(5);
+			std::vector<uint8_t> message(9);
 			message[0] = 4;
-			memcpy(&message[1], &flow.dst_ip, 4);
+			memcpy(&message[1], &flow.src_ip, 4);
+			memcpy(&message[5], &flow.dst_ip, 4);
 
 			uint32_t* ipINT = (uint32_t*) &message[1];
 			
