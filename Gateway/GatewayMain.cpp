@@ -45,8 +45,12 @@ void set_gateway_values(int x){
 			MY_IP = inet_addr("10.4.13.3");
 			aitf_hosts_table->add_host(inet_addr("10.4.13.1"), 10);
 			aitf_hosts_table->add_host(inet_addr("10.4.13.5"), 10);
-			aitf_hosts_table->add_host(inet_addr("10.4.13.3"), 10);
 			aitf_hosts_table->add_host(inet_addr("10.4.13.4"), 10);
+
+			aitf_hosts_table->add_host(inet_addr("10.4.13.128"), 10);
+			aitf_hosts_table->add_host(inet_addr("10.4.13.129"), 10);
+			aitf_hosts_table->add_host(inet_addr("10.4.13.130"), 10);
+			aitf_hosts_table->add_host(inet_addr("10.4.13.131"), 10);
 		break;
 		case 2:
 			MY_IP = inet_addr("10.4.13.4");
@@ -74,8 +78,14 @@ void set_gateway_values(int x){
    the internet traffic manager
  */
 int main(int argc, char* argv[]){
+	
+	if(argc == 3){
+		set_log_level(atoi(argv[2]));
+	}
+	else{
+		set_log_level(2);
+	}
 
-	set_log_level(4);
 
 	aitf_hosts_table = new Aitf_Hosts_Table();
 	aitf_hosts_table->start_thread();
@@ -87,12 +97,13 @@ int main(int argc, char* argv[]){
 
 
 	//set the gateway info
-	if(argc == 2){
+	if(argc >= 2){
 		set_gateway_values(atoi(argv[1]));
 	}
 	else{
 		set_gateway_values(1);
 	}
+
 
 
 	Aitf_Manager* aitf_manager = new Aitf_Manager();

@@ -66,6 +66,7 @@ void Filter_Set::add_filter(Flow flow, int secs){
 }
 
 void Filter_Set::add_gtw_rvalue(uint32_t gtw_ip, uint64_t rvalue){
+	log(logDEBUG2) << "ADDING RVALUE FILTER";
 	rvalue_filters[gtw_ip] = rvalue;
 }
 
@@ -93,10 +94,16 @@ bool Filter_Set::flow_is_filtered(Flow flow){
 	bool is_filtered = false;
 	//determine the type of flow
 	//if it is a * flow
-	if(flow.src_ip == 0){
+	uint8_t star_gtw_ip = flow.pointer - 1;
+	if(star_gtw_ip < 0){
+		star_gtw_ip = 0;
+	}
+	is_filtered = (gateway_filters.count(flow.get_gtw_ip_at(star_gtw_ip)) == 1);
+	/*if(flow.src_ip == 0){
 		is_filtered = (gateway_filters.count(flow.gtw0_ip) == 1);
 	}
-	else{
+	else{*/
+	if(!is_filtered){
 		is_filtered = (flow_filters.count(flow) == 1);
 		log(logDEBUG2) << "In filter set checking flow: " << is_filtered;
 	}
@@ -113,12 +120,13 @@ bool Filter_Set::flow_is_filtered(Flow flow){
 			if(rvalue_filters.count(ip) == 1){
 				//check the rvalue
 				if(rvalue != rvalue_filters[ip]){
+					log(logDEBUG2) << "FILTERING BASED ON RVALUE";
 					is_filtered = true;
 					break;
 				}
 			}
 		}//for
-	}//if(!isfiltered)
+	}//if(!is_filtered)
 
 	return is_filtered;
 

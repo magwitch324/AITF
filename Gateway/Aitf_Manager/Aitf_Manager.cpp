@@ -97,20 +97,20 @@ void Aitf_Manager::packet_arrived(std::vector<uint8_t> recv_buf){
 
 void Aitf_Manager::handle_filter_reply(std::vector<uint8_t> message){
 	if(message.size() == 9){
-		log(logDEBUG) << "Received filter reply";
+		log(logINFO) << "Received filter reply";
 		Flow flow;
 		memcpy(&flow.src_ip, &message[1], 4);
 		memcpy(&flow.dst_ip, &message[5], 4);
 		flow.gtw0_ip = MY_IP;
 		flow.gtw0_rvalue = Hasher::hash(*gateway_key, (unsigned char*) &flow.dst_ip, 4);
 
-		log(logERROR) << Helpers::ip_to_string(flow.src_ip);
+		log(logDEBUG2) << Helpers::ip_to_string(flow.src_ip);
 
-		log(logERROR) << Helpers::ip_to_string(flow.gtw0_ip);
+		log(logDEBUG2) << Helpers::ip_to_string(flow.gtw0_ip);
 
-		log(logERROR) << flow.gtw0_rvalue;
+		log(logDEBUG2) << flow.gtw0_rvalue;
 
-		log(logERROR) << Helpers::ip_to_string(flow.dst_ip);
+		log(logDEBUG2) << Helpers::ip_to_string(flow.dst_ip);
 
 		//if there was a filter request sent for this flow
 		if(filter_table->attempt_count(flow) > 0){
@@ -125,7 +125,7 @@ void Aitf_Manager::handle_filter_reply(std::vector<uint8_t> message){
 }
 
 void Aitf_Manager::handle_handshake_finish(std::vector<uint8_t> message){
-	log(logDEBUG2) << "Received handshake finish";
+	log(logINFO) << "Received handshake finish";
 
 	if(message.size() == 91){
 		Flow flow(std::vector<uint8_t>(&message[2], &message[2] + 81));
@@ -146,23 +146,25 @@ void Aitf_Manager::handle_handshake_finish(std::vector<uint8_t> message){
 			log(logDEBUG2) << "attack filter src: " << Helpers::ip_to_string(flow.src_ip);
 			log(logDEBUG2) << "attack filter dst: " << Helpers::ip_to_string(flow.dst_ip);
 			for(int i = 0; i <= flow.pointer; i++){
-				log(logERROR) << "attack gtw ip " << i << " "<< Helpers::ip_to_string(flow.get_gtw_ip_at(i));
-				log(logERROR) << "attack gtw rvalue " << i << " "<< flow.get_gtw_rvalue_at(i);
+				log(logDEBUG2) << "attack gtw ip " << i << " "<< Helpers::ip_to_string(flow.get_gtw_ip_at(i));
+				log(logDEBUG2) << "attack gtw rvalue " << i << " "<< flow.get_gtw_rvalue_at(i);
 			}
 
 			filter_table->add_temp_filter(flow);
 
+#ifndef LYING
 			log(logDEBUG2) << "checking shadow table";
 			//check shadow table
 			int request_attempts = shadow_table->attempt_count(flow);
 
 			deal_with_attacker(flow, request_attempts);
+#endif
 		}
 	}
 }
 
 void Aitf_Manager::handle_handshake_request(std::vector<uint8_t> message){
-	log(logDEBUG2) << "Received handshake request";
+	log(logINFO) << "Received handshake request";
 
 	//check the message length
 	if(message.size() == 95){
@@ -207,16 +209,26 @@ void Aitf_Manager::handle_handshake_request(std::vector<uint8_t> message){
 				//send back the reply with a correct r_value and same nonce
 				log(logDEBUG) << "INCORRECT HASH";
 				Flow modified_flow(flow);
-				modified_flow.set_gtw_rvalue_at(this_gtw_ptr, actual);
+				//modified_flow.set_gtw_rvalue_at(this_gtw_ptr, actual);
+				reply.resize(99);
+				memcpy(&reply[91], &actual, 8);
+
+				log(logDEBUG2) << "src: " << Helpers::ip_to_string(modified_flow.src_ip);
+				log(logDEBUG2) << "dst: " << Helpers::ip_to_string(modified_flow.dst_ip);
+				for(int i = 0; i <= modified_flow.pointer; i++){
+					log(logDEBUG2) << "gtw ip " << i << " "<< Helpers::ip_to_string(modified_flow.get_gtw_ip_at(i));
+					log(logDEBUG2) << "gtw rvalue " << i << " "<< modified_flow.get_gtw_rvalue_at(i);
+				}
 
 				//copy in the flow to to reply
 				memcpy(&reply[2], &modified_flow.to_byte_vector()[0], 81);
 				//copy in the nonce from the original message
 				memcpy(&reply[83], &message[87], 8);
 			}
-
+#ifndef UNRESPONSIVE
 			//send the message
 			send_message(flow.dst_ip, reply);
+#endif
 
 		}
 	}
@@ -241,7 +253,7 @@ void Aitf_Manager::send_message(uint32_t ip, std::vector<uint8_t> message){
 }
 
 void Aitf_Manager::handle_filter_request(std::vector<uint8_t> message){
-	log(logDEBUG2) << "Received filter request";
+	log(logINFO) << "Received filter request";
 
 	//check the message length
 	if(message.size() == 83){
@@ -255,7 +267,7 @@ void Aitf_Manager::handle_filter_request(std::vector<uint8_t> message){
 
 			Flow flow(std::vector<uint8_t>(&message[1], &message[1]+81));
 			/*for(int i = 0; i < 83; i++){
-			  log(logERROR) << (int) message[i];
+			  log(logDEBUG2) << (int) message[i];
 			  }*/
 			//apply temp filter
 			filter_table->add_temp_filter(flow);
@@ -270,9 +282,9 @@ void Aitf_Manager::handle_filter_request(std::vector<uint8_t> message){
 				deal_with_attacker(flow, request_attempts);
 			}
 			else{
-				log(logDEBUG2) << "Dealing with another gateway";
+				log(logINFO) << "Dealing with another gateway";
 				//if this is a repeat offense for the gateway (twice)
-				if(request_attempts > 2){
+				if(request_attempts >= 2){
 					attempt_escalation(flow, request_attempts - 1);
 				}
 				else{
@@ -296,8 +308,8 @@ void Aitf_Manager::handle_filter_request(std::vector<uint8_t> message){
 					log(logDEBUG2) << "Handshake filter src: " << Helpers::ip_to_string(handshake_flow.src_ip);
 					log(logDEBUG2) << "Handshake filter dst: " << Helpers::ip_to_string(handshake_flow.dst_ip);
 					for(int i = 0; i <= flow.pointer; i++){
-						log(logERROR) << "gtw ip " << i << " "<< Helpers::ip_to_string(handshake_flow.get_gtw_ip_at(i));
-						log(logERROR) << "gtw rvalue " << i << " "<< handshake_flow.get_gtw_rvalue_at(i);
+						log(logDEBUG2) << "gtw ip " << i << " "<< Helpers::ip_to_string(handshake_flow.get_gtw_ip_at(i));
+						log(logDEBUG2) << "gtw rvalue " << i << " "<< handshake_flow.get_gtw_rvalue_at(i);
 					}
 
 					log(logDEBUG2) << "About to send 1handshake with:";
@@ -321,7 +333,7 @@ void Aitf_Manager::handle_filter_request(std::vector<uint8_t> message){
 }
 
 void Aitf_Manager::deal_with_attacker(Flow flow, int request_attempts){
-	log(logDEBUG2) << "dealing with attacker";
+	log(logINFO) << "dealing with attacker";
 
 	//if the host is AITF enabled
 	if(aitf_hosts_table->contains_host(flow.src_ip)){
@@ -337,7 +349,7 @@ void Aitf_Manager::deal_with_attacker(Flow flow, int request_attempts){
 
 			uint32_t* ipINT = (uint32_t*) &message[1];
 			
-			log(logERROR) << "sending this ip " << Helpers::ip_to_string(*ipINT);
+			log(logDEBUG2) << "sending this ip " << Helpers::ip_to_string(*ipINT);
 
 			//contact host
 			send_message(flow.src_ip, message);
@@ -347,6 +359,7 @@ void Aitf_Manager::deal_with_attacker(Flow flow, int request_attempts){
 		}
 	}
 	else{
+		log(logINFO) << "Non aitf host. filtering locally";
 		//For non AITF enabled hosts, just cut them off
 		filter_table->add_long_filter(flow);
 
@@ -354,7 +367,7 @@ void Aitf_Manager::deal_with_attacker(Flow flow, int request_attempts){
 }
 
 std::vector<uint8_t> Aitf_Manager::create_handshake(Flow flow, int attempts){
-	log(logDEBUG2) << "Creating handshake";
+	log(logDEBUG) << "Creating handshake";
 	//generate the nonce
 	uint64_t nonce = Hasher::hash(*gateway_key, (unsigned char*) &flow.to_byte_vector()[0], 81);
 	//construct the handshake request wiht the flow
@@ -371,32 +384,32 @@ std::vector<uint8_t> Aitf_Manager::create_handshake(Flow flow, int attempts){
 }
 
 void Aitf_Manager::unresponsive_host(const boost::system::error_code& e, boost::shared_ptr<boost::asio::deadline_timer> timer, Flow flow){
-	log(logDEBUG2) << "_________________In unresponsive_host callback_________________";
+	log(logINFO) << "_________________In unresponsive_host callback_________________";
 	
-		log(logERROR) << Helpers::ip_to_string(flow.src_ip);
+		log(logDEBUG2) << Helpers::ip_to_string(flow.src_ip);
 
-		log(logERROR) << Helpers::ip_to_string(flow.gtw0_ip);
+		log(logDEBUG2) << Helpers::ip_to_string(flow.gtw0_ip);
 
-		log(logERROR) << flow.gtw0_rvalue;
+		log(logDEBUG2) << flow.gtw0_rvalue;
 
-		log(logERROR) << Helpers::ip_to_string(flow.dst_ip);
+		log(logDEBUG2) << Helpers::ip_to_string(flow.dst_ip);
 	//if the flow has not been added to the table then cut off the client
 	if(shadow_table->attempt_count(flow) == 0){
-		log(logDEBUG2) << "HOST WAS UNRESPONSIVE";
+		log(logINFO) << "HOST WAS UNRESPONSIVE";
 		filter_table->add_long_filter(flow);
 	}
 	else{
-		log(logDEBUG2) << "HOST WAS RESPONSIVE";
+		log(logINFO) << "HOST WAS RESPONSIVE";
 	}
 
 }
 
 void Aitf_Manager::unresponsive_gateway(const boost::system::error_code& e, boost::shared_ptr<boost::asio::deadline_timer> timer, Flow flow, uint8_t escalation, int attempts){
-	log(logDEBUG2) << "_________________In unresponsive_gateway callback_________________";
+	log(logINFO) << "_________________In unresponsive_gateway callback_________________";
 
 	//if the flow has not been added to the table then check for escalation
 	if(shadow_table->attempt_count(flow) == 0){
-		log(logDEBUG2) << "GATEWAY WAS UNRESPONSIVE";
+		log(logINFO) << "GATEWAY WAS UNRESPONSIVE";
 		if(escalation == 1){
 			//if there is escalation attempt to escalate to the next gateway
 			attempt_escalation(flow, attempts);
@@ -408,7 +421,7 @@ void Aitf_Manager::unresponsive_gateway(const boost::system::error_code& e, boos
 		}
 	}
 	else{
-		log(logDEBUG2) << "GATEWAY WAS RESPONSIVE";
+		log(logINFO) << "GATEWAY WAS RESPONSIVE";
 		//increment the shadowtable filter count to show the number of attempts made
 		for(int i = 0; i < attempts; i++){
 			shadow_table->add_long_filter(flow);
@@ -422,8 +435,7 @@ void Aitf_Manager::attempt_escalation(Flow flow, int attempts){
 	//if there is an available gateway in the flow
 	if(attempts < flow.pointer){
 
-		//construct the handshake
-		std::vector<uint8_t> handshake = create_handshake(flow, attempts);
+		
 
 		//Create filter for return handshake with only correct gateways
 		uint32_t dst_gtw_ip = flow.get_gtw_ip_at(attempts);
@@ -440,6 +452,13 @@ void Aitf_Manager::attempt_escalation(Flow flow, int attempts){
 		}
 
 		filter_table->add_temp_filter(handshake_flow);
+
+		//set the src to 0 for *
+		Flow modified_flow(flow);
+		modified_flow.src_ip = 0;
+
+		//construct the handshake
+		std::vector<uint8_t> handshake = create_handshake(modified_flow, attempts);
 
 		//SEND HANDSHAKE
 		send_message(dst_gtw_ip, handshake);

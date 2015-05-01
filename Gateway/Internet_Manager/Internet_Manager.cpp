@@ -41,10 +41,12 @@ void Internet_Manager::start_thread(){
 }
 
 void Internet_Manager::stop_thread(){
+	log(logINFO) << "Stopping Internet_Manager";
 	packet_manager->stop();
 	internet_thread.interrupt();
 	internet_thread.join();
 	delete(packet_manager);
+	log(logINFO) << "Internet_Manager stopped";
 
 }
 
@@ -75,7 +77,7 @@ bool Internet_Manager::is_allowed(Flow flow, std::vector<uint8_t> payload){
 void Internet_Manager::handle_handshake(std::vector<uint8_t> message){
 	log(logINFO) << "______---------_______HANDLING HANDSHAKE______---------_______";
 	//check that the message is the right size
-	if(message.size() == 91){
+	if(message.size() == 91 || message.size() == 99){
 		//check that the msg type is correct
 		if(message[0] == 2){
 			//grab the nonce and flow
@@ -94,16 +96,20 @@ void Internet_Manager::handle_handshake(std::vector<uint8_t> message){
 
 			//if the nonce is the one that this gateway sent
 			if(nonce == actual){
+				if(message.size() == 99){
+				log(logDEBUG2) << "REQUESTED FLOW WAS INVALID";
 				//this means that the rvalue for the gateway was wrong
 				//add a filter so that only the correct value is accepted
 
+
 				//grab the correct rvalue
-				uint64_t rvalue = flow.get_gtw_rvalue_at(message[1]);
+				uint64_t* rvalue = (uint64_t*) &message[91];
 
-				filter_table->add_gtw_rvalue(flow.dst_ip, gtw_ip, rvalue);
-
+				filter_table->add_gtw_rvalue(flow.dst_ip, gtw_ip, *rvalue);
+			}
 			}
 			else{
+				log(logDEBUG2) << "REQUESTED FLOW WAS VALID";
 				message[0] = 3;
 				//the rvalue is correct, just reflect the message back
 				send_message(gtw_ip, message);
