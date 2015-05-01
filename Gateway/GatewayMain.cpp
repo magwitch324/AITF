@@ -39,7 +39,7 @@ void set_gateway_values(int x){
 	nonaitf_dests_table->add_dst(16777343);
 	uint32_t ip = inet_addr("10.10.128.129");
 	nonaitf_dests_table->add_dst(ip);
-
+	//aitf_hosts_table->add_host(99, 10);
 	switch(x){
 		case 1:
 			MY_IP = inet_addr("10.4.13.1");
