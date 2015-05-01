@@ -66,6 +66,7 @@ void Filter_Set::add_filter(Flow flow, int secs){
 }
 
 void Filter_Set::add_gtw_rvalue(uint32_t gtw_ip, uint64_t rvalue){
+	log(logDEBUG2) << "ADDING RVALUE FILTER";
 	rvalue_filters[gtw_ip] = rvalue;
 }
 
@@ -119,6 +120,7 @@ bool Filter_Set::flow_is_filtered(Flow flow){
 			if(rvalue_filters.count(ip) == 1){
 				//check the rvalue
 				if(rvalue != rvalue_filters[ip]){
+					log(logDEBUG2) << "FILTERING BASED ON RVALUE";
 					is_filtered = true;
 					break;
 				}

@@ -52,7 +52,7 @@ void Packet_Manager::start(){
 		if (rv < 0) {
 			continue;
 		}
-		log(logINFO) << "Internet Queue is Receiceiving Packet";
+		log(logDEBUG) << "Internet Queue is Receiceiving Packet";
 		nfq_handle_packet(my_netfilterqueue_handle, buf, rv);
 	}
 }
@@ -90,7 +90,7 @@ void compute_ip_checksum(struct iphdr* iphdrp){
 
 
 int Packet_Manager::packet_callback(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg, struct nfq_data *nfad, void *data){
-	log(logINFO) << "----------------ITS HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!----------------";
+	log(logINFO) << "----------------INTERCEPTED PACKET----------------";
 
 	struct nfqnl_msg_packet_hdr *ph;
 	int len;
@@ -129,7 +129,7 @@ int Packet_Manager::packet_callback(struct nfq_q_handle *qh, struct nfgenmsg *nf
 		}
 
 		//If the packet already has an RR header
-		log(logDEBUG) << "AITF PACKET!!!!";
+		log(logINFO) << "AITF PACKET!!!!";
 
 
 		//make a copy of the packet to edit
@@ -167,8 +167,8 @@ int Packet_Manager::packet_callback(struct nfq_q_handle *qh, struct nfgenmsg *nf
 		bool is_allowed = listener->is_allowed(flow, payload);
 		
 		for(int i = 0; i <= flow.pointer; i++){
-			log(logERROR) << "gtw ip " << i << Helpers::ip_to_string(flow.get_gtw_ip_at(i));
-			log(logERROR) << "gtw rvalue " << i << flow.get_gtw_rvalue_at(i);
+			log(logDEBUG2) << "gtw ip " << i << Helpers::ip_to_string(flow.get_gtw_ip_at(i));
+			log(logDEBUG2) << "gtw rvalue " << i << flow.get_gtw_rvalue_at(i);
 		}
 		if(!is_allowed){
 			return nfq_set_verdict(qh, id, NF_DROP, 0, NULL);
@@ -184,7 +184,7 @@ int Packet_Manager::packet_callback(struct nfq_q_handle *qh, struct nfgenmsg *nf
 	}
 	else{
 		//if it isnt AITF traffic
-		log(logDEBUG) << "Non AITF traffic";
+		log(logINFO) << "Non AITF traffic";
 		//pull out the destination ip
 		u_int32_t dst_ip = ipHeader->daddr;
 		//If the destination is not AITF compliant
@@ -213,6 +213,9 @@ int Packet_Manager::packet_callback(struct nfq_q_handle *qh, struct nfgenmsg *nf
 			flow.pointer = 0;
 			flow.gtw0_ip = MY_IP;
 			flow.gtw0_rvalue = Hasher::hash(*gateway_key, (unsigned char*) &flow.dst_ip, 4);
+#ifdef FORGE
+			flow.gtw0_rvalue = 1;
+#endif
 
 			log(logDEBUG) << "Getting UDP Info";
 			std::vector<uint8_t> payload(0);
