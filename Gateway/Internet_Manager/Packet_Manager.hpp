@@ -25,7 +25,7 @@ class Packet_Manager {
 
 	private:
 		static int packet_callback(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg, struct nfq_data *nfad, void *data);
-		static uint32_t print_pkt (struct nfq_data *tb);
+		//static uint32_t print_pkt (struct nfq_data *tb);
 		enum {STARTING, STARTED, ENDING, ENDED};
 		mutable boost::atomic<int> state;
 		static Packet_Sniffer* listener;
