@@ -69,9 +69,20 @@ void Udp_Server::handle_receive(const boost::system::error_code& error, std::siz
 	//listen for new connections
 	udp_listen();
 
+	uint8_t msg_type = data[0];
+	llog(logDEBUG) << "Message type: " << (int) msg_type;
+
+	if( msg_type != 4 ) {
+		llog(logWARNING) << "Improper message type for host";
+		return;
+	}
+
+	memcpy(&ip, &data[1], 4);
+
 	//pass the packet to the listener
-	if(reg_listens.size() > 0) {
-		reg_listens.begin()->second->aitfCommunication(data);
+	if(reg_listens.count(ip) > 0) {
+
+		reg_listens[ip]->aitfCommunication(data);
 	}
 
 

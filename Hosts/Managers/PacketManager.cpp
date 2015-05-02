@@ -39,7 +39,7 @@ void PacketManager::aitfCommunication(std::vector<uint8_t> recv_buf) {
 
 	switch(msg_type){
 		case 4: //Attack filter request
-			memcpy(&t_ip, &recv_buf[1], 4);
+			memcpy(&t_ip, &recv_buf[5], 4);
 			attack_manager->addFilter(t_ip, T_LONG_MS);
 			break;
 		case 0: //Filter request

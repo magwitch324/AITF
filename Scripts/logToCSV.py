@@ -33,7 +33,7 @@ def createCSV( filename ) :
 		
 		band_by_flow[flow] = f[:]		
 	
-	w_file.write( "Flows," + ",".join( map(str,range(1,len(initial_band)+1) )) + "\n" )
+	w_file.write( "," + ",".join( map(str,range(1,len(initial_band)+1) )) + "\n" )
 	for flow, bands in band_by_flow.iteritems() :
 		w_file.write(flow + "," + ",".join( map( str, bands) ) + "\n");
 		

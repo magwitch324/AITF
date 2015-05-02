@@ -13,7 +13,7 @@
 
 FilterModule::FilterModule() {
 	llog(logINFO) << "Creating filter module";
-	activeFilters = new Async_Auto_Flow_Table( "../activeFilters.log", 1000);
+	activeFilters = new Async_Auto_Flow_Table( "./activeFilters.log", 1000);
 	activeFilters->start_thread();
 	//activeFilters = new Async_Auto_Table();
 
@@ -39,7 +39,7 @@ void FilterModule::addNewFilter(uint32_t source_ip, uint32_t destination_ip, int
 	timeout = (std::rand() % ( timeout - T_TEMP_MS*2) ) + T_TEMP_MS*2;
 #endif
 
-	llog(logINFO) << "Setting new filter for all traffic from " << Helpers::ip_to_string(source_ip) << " to " << Helpers::ip_to_string(destination_ip) << " for " << Helpers::ip_to_string(destination_ip) << "ms";
+	llog(logINFO) << "Setting new filter for all traffic from " << Helpers::ip_to_string(source_ip) << " to " << Helpers::ip_to_string(destination_ip) << " for " << timeout << "ms";
 
 	Flow flow;
 	flow.src_ip = source_ip;

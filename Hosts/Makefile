@@ -4,13 +4,15 @@ SOURCE = ./Managers/*.cpp ./Modules/*.cpp ./Servers/*.cpp ./Tables/*.cpp ./*.cpp
 
 all: Normal
 
+Everything: Normal Lying
+
 Normal: $(SOURCE) 
 	g++ -g -std=gnu++11 $(SOURCE) -o Host.out -lboost_system -lboost_thread -lpthread -lnfnetlink -lnetfilter_queue
 	
-lying: $(SOURCE) 
+Lying: $(SOURCE) 
 	g++ -g -std=gnu++11 -DLYING_ATTACKER $(SOURCE) -o Lying.out -lboost_system -lboost_thread -lpthread -lnfnetlink -lnetfilter_queue
 	
-long: $(SOURCE) 
+Long: $(SOURCE) 
 	g++ -g -std=gnu++11 -DT_LONG=60 $(SOURCE) -o Long_Host.out -lboost_system -lboost_thread -lpthread -lnfnetlink -lnetfilter_queue
 
 clean:

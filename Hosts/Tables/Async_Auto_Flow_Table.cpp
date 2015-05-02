@@ -3,6 +3,7 @@
 
 #include "Async_Auto_Flow_Table.hpp"
 #include "../logger.hpp"
+#include "../Helpers.hpp"
 
 Async_Auto_Flow_Table::Async_Auto_Flow_Table() {
 	llog(logDEBUG) << "I am creating normal flow table ";
@@ -51,11 +52,12 @@ int Async_Auto_Flow_Table::getValue(Flow flow) {
  *	output: the given value or -1 if the max was surpassed with the new value added and not already surpassed
  */
 int Async_Auto_Flow_Table::addValue(Flow flow, int value, int max, uint32_t timeout) {
-	llog(logDEBUG2) << "adding " << value << " to " << flow;
 	int ret = value;
 	table_mutex.lock();
 
 	table[flow] += value;
+
+	llog(logDEBUG2) << "adding " << value << " to " << flow << " to make " << table[flow];
 
 	if (table[flow] > max) {
 		llog(logDEBUG) << "------------------------------------------------------------";
@@ -81,13 +83,14 @@ int Async_Auto_Flow_Table::addValue(Flow flow, int value, int max, uint32_t time
 
 
 void Async_Auto_Flow_Table::decrement(const boost::system::error_code& e, boost::shared_ptr<boost::asio::deadline_timer> timer, Flow flow, int value) {
-	llog(logDEBUG) << "removing " << value << " to " << flow;	
 	timer.reset();
 
 	table_mutex.lock();
 
 	recent[flow] = false;
 	table[flow] -= value;
+
+	llog(logDEBUG2) << "removing " << value << " to " << flow << " to make " << table[flow];
 
 	if (table[flow] == 0)
 		table.erase(flow);
@@ -107,7 +110,7 @@ void Async_Auto_Flow_Table::printStatus(const boost::system::error_code& e, std:
 	table_mutex.lock();
 
 	for ( auto iter = table.begin(); iter != table.end(); ++ iter ) {
-		fh << "," << iter->first << "," << iter->second;
+		fh << "," << Helpers::ip_to_string(iter->first.src_ip) << "," << iter->second;
 	}
 	table_mutex.unlock();
 

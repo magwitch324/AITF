@@ -37,11 +37,11 @@ int AttackManager::packetCallbackFunc(struct nfq_q_handle *qh, struct nfgenmsg *
 	destination_ip = *((uint32_t *) (buffer + 16));
 	
 	if( filter->shouldFilter(my_ip, destination_ip) > 0 ) {
-		llog(logINFO) << my_ip <<" is filtering towards " << Helpers::ip_to_string(destination_ip);
+		llog(logINFO) << Helpers::ip_to_string(my_ip) <<" is filtering towards " << Helpers::ip_to_string(destination_ip);
 		return nfq_set_verdict(qh, id, NF_DROP, 0, NULL);
 	} 
 
-	llog(logINFO) << my_ip <<" is allowing traffic to " << Helpers::ip_to_string(destination_ip);
+	llog(logINFO) << Helpers::ip_to_string(my_ip) <<" is allowing traffic to " << Helpers::ip_to_string(destination_ip);
 	return nfq_set_verdict(qh, id, NF_ACCEPT, 0, NULL);
 
 }

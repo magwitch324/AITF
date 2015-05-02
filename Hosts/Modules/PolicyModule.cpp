@@ -14,7 +14,7 @@
 PolicyModule::PolicyModule(){
 	llog(logDEBUG) << "Creating policy module";
 
-	bandwidthUsage = new Async_Auto_Flow_Table( "../hostBandwidth.log", 500);
+	bandwidthUsage = new Async_Auto_Flow_Table( "./hostBandwidth.log", 500);
 	//bandwidthUsage = new Async_Auto_Flow_Table();
 
 	defaults[inet_addr("10.4.13.1")] = 5000;

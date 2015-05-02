@@ -105,7 +105,7 @@ int VictimManager::packetCallbackFunc(struct nfq_q_handle *qh, struct nfgenmsg *
 }
 
 void VictimManager::SendFilterRequest(Flow * flow) {
-	llog(logDEBUG) << "Sending Filter request - gtwy " << Helpers::ip_to_string(flow->gtw0_ip) << " with r" << flow->gtw0_rvalue;
+	llog(logDEBUG) << "Sending Filter request - attack gtwy " << Helpers::ip_to_string(flow->gtw0_ip) << " with r " << flow->gtw0_rvalue;
 	using namespace boost::asio;
 	using boost::asio::ip::udp;
 

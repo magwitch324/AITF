@@ -22,7 +22,7 @@ class logIt
 		end_line = endline;
 		loglevel2 = _loglevel;
 
-		_buffer << (boost::posix_time::second_clock::local_time().time_of_day().seconds());
+		_buffer << (boost::posix_time::second_clock::local_time().time_of_day().seconds()) << " - ";
 
 		if(endline != 2){
 			switch(loglevel2){
