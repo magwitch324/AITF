@@ -1,4 +1,4 @@
-# CS4404: Advanced Internet Traffic Filter (AITF)
+# CS4404: Active Internet Traffic Filter (AITF)
 
 A C++ implementation of Katerina Argyraki and David R. Cheriton's "Active Internet Traffic Filtering: Real-Time Response to Denial-of-Service Attacks" paper[1]. This project was completed as a capstone for Worcester Polytechnic Institute's CS4404 Network Security.
 
